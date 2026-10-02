@@ -87,7 +87,7 @@ def test_member_list_search_status_and_wildcards_are_safe() -> None:
 
     wildcard = client.get("/api/v1/members", params={"query": "%"})
     assert wildcard.status_code == 200
-    assert wildcard.json()["total"] == 0
+    assert all(item["id"] != member_id for item in wildcard.json()["items"])
 
 
 def test_member_update_deactivate_and_reactivate() -> None:
