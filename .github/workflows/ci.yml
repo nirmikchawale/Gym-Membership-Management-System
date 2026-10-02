@@ -72,7 +72,8 @@ jobs:
       - name: Typecheck
         run: uv run --project backend mypy backend/app backend/tests
       - name: Tests
-        run: uv run --project backend pytest backend/tests
+        working-directory: backend
+        run: uv run pytest
 
   container:
     runs-on: ubuntu-latest

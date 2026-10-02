@@ -18,7 +18,10 @@ echo "==> Backend checks"
 uv run --project backend ruff check backend
 uv run --project backend ruff format --check backend
 uv run --project backend mypy backend/app backend/tests
-uv run --project backend pytest backend/tests
+(
+  cd backend
+  uv run pytest
+)
 
 echo "==> Container stack"
 docker compose up -d --build
