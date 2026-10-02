@@ -4,6 +4,7 @@ from uuid import UUID, uuid4
 from sqlalchemy import func, or_, select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
+from sqlalchemy.sql.elements import ColumnElement
 
 from app.db.models.member import Member
 from app.schemas.member import MemberCreate, MemberUpdate
@@ -40,7 +41,7 @@ def list_members(
     limit: int,
     offset: int,
 ) -> tuple[Sequence[Member], int]:
-    filters = []
+    filters: list[ColumnElement[bool]] = []
     if active is not None:
         filters.append(Member.is_active.is_(active))
 
