@@ -27,6 +27,12 @@ jobs:
         run: pnpm install --frozen-lockfile
       - name: Formatting
         run: pnpm format:check
+      - name: Reject unfinished non-payment UI copy
+        run: |
+          if grep -RniE 'Not implemented( yet)?|Coming soon|Later approved slice|Planned capability|Read-only (demo|preview)|State-changing controls are disabled|does not mutate' src --exclude='PaymentsPage.tsx' --exclude='*.test.*' --exclude='*.spec.*'; then
+            echo 'Forbidden unfinished-product copy found in shipped non-payment frontend code.'
+            exit 1
+          fi
       - name: Lint
         run: pnpm lint
       - name: Typecheck
