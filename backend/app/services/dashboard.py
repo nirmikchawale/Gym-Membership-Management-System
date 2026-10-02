@@ -1,4 +1,5 @@
 from datetime import UTC, date, datetime, time, timedelta
+from typing import Any
 
 from sqlalchemy import and_, func, select
 from sqlalchemy.orm import Session
@@ -27,8 +28,8 @@ def _local_day_start(day: date) -> datetime:
     return datetime.combine(day, time.min, tzinfo=settings.timezone).astimezone(UTC)
 
 
-def _count(db: Session, statement: object) -> int:
-    return int(db.scalar(statement) or 0)  # type: ignore[arg-type]
+def _count(db: Session, statement: Any) -> int:
+    return int(db.scalar(statement) or 0)
 
 
 def get_dashboard_overview(
@@ -56,7 +57,9 @@ def get_dashboard_overview(
     membership_total = sum(status_counts.values())
     renewals = _count(
         db,
-        select(func.count()).select_from(Membership).where(Membership.renewed_from_id.is_not(None)),
+        select(func.count())
+        .select_from(Membership)
+        .where(Membership.renewed_from_membership_id.is_not(None)),
     )
 
     today_start = _local_day_start(today)
