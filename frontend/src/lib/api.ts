@@ -286,7 +286,8 @@ export async function createPlan(payload: PlanInput): Promise<PlanRecord> {
     credentials: 'same-origin',
     body: JSON.stringify(payload),
   })
-  if (!response.ok) throw new Error(await errorMessage(response, 'Unable to create membership plan'))
+  if (!response.ok)
+    throw new Error(await errorMessage(response, 'Unable to create membership plan'))
   return (await response.json()) as PlanRecord
 }
 
@@ -301,7 +302,8 @@ export async function updatePlan(planId: string, payload: PlanUpdateInput): Prom
     credentials: 'same-origin',
     body: JSON.stringify(payload),
   })
-  if (!response.ok) throw new Error(await errorMessage(response, 'Unable to update membership plan'))
+  if (!response.ok)
+    throw new Error(await errorMessage(response, 'Unable to update membership plan'))
   return (await response.json()) as PlanRecord
 }
 

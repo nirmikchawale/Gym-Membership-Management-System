@@ -121,7 +121,9 @@ function PlanFormDialog({
           : await updatePlan(plan.id, payload)
       onSaved(fromApi(saved))
     } catch (submitError: unknown) {
-      setError(submitError instanceof Error ? submitError.message : 'Unable to save membership plan')
+      setError(
+        submitError instanceof Error ? submitError.message : 'Unable to save membership plan',
+      )
       setSubmitting(false)
     }
   }
@@ -142,10 +144,17 @@ function PlanFormDialog({
       >
         <div className="member-form-dialog__header">
           <div>
-            <p className="card-eyebrow">{mode === 'create' ? 'New membership plan' : 'Plan settings'}</p>
+            <p className="card-eyebrow">
+              {mode === 'create' ? 'New membership plan' : 'Plan settings'}
+            </p>
             <h2 id="plan-form-title">{mode === 'create' ? 'Create a plan' : 'Edit plan'}</h2>
           </div>
-          <button className="icon-button" type="button" aria-label="Close plan form" onClick={onClose}>
+          <button
+            className="icon-button"
+            type="button"
+            aria-label="Close plan form"
+            onClick={onClose}
+          >
             <X size={18} aria-hidden="true" />
           </button>
         </div>
@@ -154,7 +163,13 @@ function PlanFormDialog({
           <div className="member-form__split">
             <label className="field">
               <span className="field__label">Plan code</span>
-              <input name="code" defaultValue={plan?.code ?? ''} maxLength={32} autoFocus required />
+              <input
+                name="code"
+                defaultValue={plan?.code ?? ''}
+                maxLength={32}
+                autoFocus
+                required
+              />
             </label>
             <label className="field">
               <span className="field__label">Plan name</span>
@@ -191,7 +206,13 @@ function PlanFormDialog({
           </div>
           <label className="field plan-currency-field">
             <span className="field__label">Currency</span>
-            <input name="currency" defaultValue={plan?.currency ?? 'INR'} minLength={3} maxLength={3} required />
+            <input
+              name="currency"
+              defaultValue={plan?.currency ?? 'INR'}
+              minLength={3}
+              maxLength={3}
+              required
+            />
           </label>
 
           {error && (
@@ -214,13 +235,7 @@ function PlanFormDialog({
   )
 }
 
-export function PlansPage({
-  publicPreview,
-  user,
-}: {
-  publicPreview: boolean
-  user: AuthUser
-}) {
+export function PlansPage({ publicPreview, user }: { publicPreview: boolean; user: AuthUser }) {
   const [query, setQuery] = useState('')
   const [debouncedQuery, setDebouncedQuery] = useState('')
   const [status, setStatus] = useState<StatusFilter>('all')
@@ -382,7 +397,9 @@ export function PlansPage({
               <p className="card-eyebrow">Plan catalog</p>
               <h2>Price and package configuration</h2>
             </div>
-            <Badge tone="neutral">{loading ? 'Loading…' : `${total} result${total === 1 ? '' : 's'}`}</Badge>
+            <Badge tone="neutral">
+              {loading ? 'Loading…' : `${total} result${total === 1 ? '' : 's'}`}
+            </Badge>
           </div>
 
           <div className="data-toolbar plan-toolbar">
@@ -424,29 +441,46 @@ export function PlansPage({
                   <th>Price</th>
                   {publicPreview && <th>Demo members</th>}
                   <th>Status</th>
-                  <th><span className="sr-only">Actions</span></th>
+                  <th>
+                    <span className="sr-only">Actions</span>
+                  </th>
                 </tr>
               </thead>
               <tbody>
                 {!loading &&
                   plans.map((plan) => (
-                    <tr key={plan.id} className={selectedId === plan.id ? 'plan-row--selected' : undefined}>
+                    <tr
+                      key={plan.id}
+                      className={selectedId === plan.id ? 'plan-row--selected' : undefined}
+                    >
                       <td data-label="Plan">
-                        <button className="plan-name-button" type="button" onClick={() => setSelectedId(plan.id)}>
+                        <button
+                          className="plan-name-button"
+                          type="button"
+                          onClick={() => setSelectedId(plan.id)}
+                        >
                           <strong>{plan.name}</strong>
                           <small>{plan.code}</small>
                         </button>
                       </td>
                       <td data-label="Duration">{plan.durationDays} days</td>
-                      <td data-label="Price"><strong>{money(plan)}</strong></td>
-                      {publicPreview && <td data-label="Demo members">{plan.activeMembers ?? 0}</td>}
+                      <td data-label="Price">
+                        <strong>{money(plan)}</strong>
+                      </td>
+                      {publicPreview && (
+                        <td data-label="Demo members">{plan.activeMembers ?? 0}</td>
+                      )}
                       <td data-label="Status">
                         <Badge tone={plan.isActive ? 'success' : 'neutral'}>
                           {plan.isActive ? 'Active' : 'Inactive'}
                         </Badge>
                       </td>
                       <td className="plan-table__action">
-                        <Button type="button" variant="ghost" onClick={() => setSelectedId(plan.id)}>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          onClick={() => setSelectedId(plan.id)}
+                        >
                           View
                         </Button>
                       </td>
@@ -505,10 +539,24 @@ export function PlansPage({
                 {selected.description ?? 'No description has been added for this plan.'}
               </p>
               <dl className="plan-detail__facts">
-                <div><dt>Duration</dt><dd>{selected.durationDays} days</dd></div>
-                <div><dt>Price</dt><dd>{money(selected)}</dd></div>
-                <div><dt>Currency</dt><dd>{selected.currency}</dd></div>
-                {publicPreview && <div><dt>Demo members</dt><dd>{selected.activeMembers ?? 0}</dd></div>}
+                <div>
+                  <dt>Duration</dt>
+                  <dd>{selected.durationDays} days</dd>
+                </div>
+                <div>
+                  <dt>Price</dt>
+                  <dd>{money(selected)}</dd>
+                </div>
+                <div>
+                  <dt>Currency</dt>
+                  <dd>{selected.currency}</dd>
+                </div>
+                {publicPreview && (
+                  <div>
+                    <dt>Demo members</dt>
+                    <dd>{selected.activeMembers ?? 0}</dd>
+                  </div>
+                )}
               </dl>
               {canManage ? (
                 <div className="plan-detail__actions">

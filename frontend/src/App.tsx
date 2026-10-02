@@ -141,7 +141,10 @@ function GridstoneApplication() {
         <Route index element={<HomePage user={auth.user} health={health} />} />
         <Route path="dashboard" element={<Navigate to="/" replace />} />
         <Route path="members" element={<MembersPage publicPreview={publicPreview} />} />
-        <Route path="plans" element={<PlansPage publicPreview={publicPreview} user={auth.user} />} />
+        <Route
+          path="plans"
+          element={<PlansPage publicPreview={publicPreview} user={auth.user} />}
+        />
         {laterModules.map((module) => (
           <Route
             key={module.path}
