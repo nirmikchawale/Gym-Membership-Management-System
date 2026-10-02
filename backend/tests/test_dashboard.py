@@ -116,12 +116,12 @@ def test_dashboard_reconciles_new_operational_records() -> None:
     assert dashboard["attendance"]["open_visits"] == baseline["attendance"]["open_visits"] + 1
     assert dashboard["attendance"]["today_checkins"] == baseline["attendance"]["today_checkins"] + 1
     assert (
-        dashboard["attendance"]["period_checkins"]
-        == baseline["attendance"]["period_checkins"] + 1
+        dashboard["attendance"]["period_checkins"] == baseline["attendance"]["period_checkins"] + 1
     )
-    assert sum(day["checkins"] for day in dashboard["attendance_trend"]) == dashboard[
-        "attendance"
-    ]["period_checkins"]
+    assert (
+        sum(day["checkins"] for day in dashboard["attendance_trend"])
+        == dashboard["attendance"]["period_checkins"]
+    )
 
     expiring_codes = {item["member_code"] for item in dashboard["expiring_soon"]}
     assert f"GST-DASH-{marker}" in expiring_codes
