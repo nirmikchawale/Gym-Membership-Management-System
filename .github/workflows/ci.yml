@@ -1,0 +1,96 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  frontend:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.18.3
+          run_install: false
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Formatting
+        run: pnpm format:check
+      - name: Lint
+        run: pnpm lint
+      - name: Typecheck
+        run: pnpm typecheck
+      - name: Tests
+        run: pnpm test:run
+      - name: Build
+        run: pnpm build
+
+  backend:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:18-alpine
+        env:
+          POSTGRES_DB: gym_membership
+          POSTGRES_USER: gym_app
+          POSTGRES_PASSWORD: gym_dev_password
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U gym_app -d gym_membership"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      DATABASE_URL: postgresql+psycopg://gym_app:gym_dev_password@localhost:5432/gym_membership
+      APP_ENV: test
+      APP_TIMEZONE: Asia/Kolkata
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          version: '0.10.0'
+          python-version: '3.14'
+          enable-cache: true
+      - name: Install dependencies
+        run: uv sync --project backend --frozen --group dev
+      - name: Ruff lint
+        run: uv run --project backend ruff check backend
+      - name: Ruff format
+        run: uv run --project backend ruff format --check backend
+      - name: Typecheck
+        run: uv run --project backend mypy backend/app backend/tests
+      - name: Tests
+        run: uv run --project backend pytest backend/tests
+
+  container:
+    runs-on: ubuntu-latest
+    needs: [frontend, backend]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build and start stack
+        run: docker compose up -d --build
+      - name: Verify single-origin app, API and PostgreSQL
+        run: |
+          for attempt in {1..30}; do
+            if curl --fail --silent --show-error http://localhost:8000/api/v1/health; then
+              exit 0
+            fi
+            sleep 2
+          done
+          docker compose logs
+          exit 1
+      - name: Stop stack
+        if: always()
+        run: docker compose down -v
