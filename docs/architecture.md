@@ -2,7 +2,7 @@
 
 ## Current implementation boundary
 
-Phase 3A establishes infrastructure only. The frozen product architecture remains a React SPA, REST API, FastAPI modular monolith, and PostgreSQL database. Business modules are not implemented here.
+Phase 3A established the repository and application infrastructure. Phase 3B adds the database persistence foundation: SQLAlchemy domain tables, deterministic Alembic migrations, database constraints/indexes, migration verification, and synthetic database integration tests. Business API CRUD, authentication/authorization, and dashboard/report behavior remain outside this phase.
 
 ## Development request path
 
@@ -18,6 +18,10 @@ Browser
 ## Production container path
 
 ```text
+Migration job
+  -> Alembic upgrade head
+  -> PostgreSQL 18
+
 Browser
   -> FastAPI/Uvicorn (:8000)
        -> /api/*      FastAPI routers
@@ -25,7 +29,7 @@ Browser
   -> PostgreSQL 18
 ```
 
-This keeps browser traffic single-origin and avoids a CORS dependency in the application architecture.
+The application container starts only after the database is healthy and the migration job has completed successfully. Browser traffic remains single-origin.
 
 ## Backend layering target
 
@@ -40,7 +44,7 @@ Router
 -> PostgreSQL
 ```
 
-Phase 3A currently contains only the infrastructure slices needed for health and database connectivity. Later phases will add domain/services/repositories incrementally. Application services, not repositories, will own business transactions.
+Phase 3B establishes the SQLAlchemy persistence layer only. Application services, not repositories, will own business transactions when feature phases begin.
 
 ## API contract
 
@@ -51,9 +55,22 @@ Phase 3A currently contains only the infrastructure slices needed for health and
 - Transport naming: `snake_case`
 - Future business errors: RFC 9457-style Problem Details
 
+## Database contract
+
+- PostgreSQL 18
+- Alembic-controlled schema history
+- UUID primary keys
+- timezone-aware timestamps
+- deterministic constraint/index naming
+- persistence tables: members, membership plans, memberships, attendance, payments
+- renewal lineage represented by a self-reference on memberships
+- no payment secrets stored
+
+See [`database.md`](database.md) for schema invariants and migration workflow.
+
 ## Frontend state boundary
 
-The Phase 3A shell uses a direct `fetch` only to prove connectivity. TanStack Query, React Router, React Hook Form, Zod, Tailwind CSS, and Recharts remain frozen stack choices and will be introduced when their owning implementation phases need them rather than as unused dependencies.
+The current shell uses a direct `fetch` only to prove connectivity. TanStack Query, React Router, React Hook Form, Zod, Tailwind CSS, and Recharts remain frozen stack choices and will be introduced when their owning implementation phases need them rather than as unused dependencies.
 
 ## Responsive/accessibility foundation
 

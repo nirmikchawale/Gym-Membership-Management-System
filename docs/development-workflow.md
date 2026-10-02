@@ -20,11 +20,24 @@ Run the relevant local checks. For foundation-level changes, run all checks via:
 bash scripts/verify-foundation.sh
 ```
 
-CI independently verifies the exact Node 24, Python 3.14, PostgreSQL 18, and Docker toolchain.
+CI independently verifies the exact Node 24, Python 3.14, PostgreSQL 18, Alembic migration history, and Docker toolchain.
+
+## Database change discipline
+
+For persistence changes:
+
+1. Change SQLAlchemy metadata deliberately.
+2. Generate or hand-author an Alembic revision.
+3. Review constraints, indexes, foreign keys, defaults, upgrade order, and downgrade order.
+4. Run `alembic upgrade head` and `alembic check`.
+5. Run database integration tests.
+6. Verify downgrade-to-base and re-upgrade in CI for foundational revisions.
+
+Never edit an already-deployed migration to disguise a schema change; add a new revision instead.
 
 ## Scope control
 
-Do not introduce member CRUD, plans, memberships, attendance, payments, renewals, dashboard/report functionality, or authentication during Phase 3A. Infrastructure-only changes are allowed when required to validate the foundation.
+Phase 3B may define persistence for members, plans, memberships/renewal lineage, attendance, and payments, but must not add business CRUD endpoints, authentication/authorization, dashboard/report behavior, or real production/demo source-data imports. Payments must never store card numbers, CVV, bank credentials, UPI PINs, or equivalent secrets.
 
 ## Completion vocabulary
 

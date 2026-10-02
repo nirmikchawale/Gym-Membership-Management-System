@@ -1,17 +1,17 @@
 # Gym Membership Management System
 
-Group 11 Software Engineering project. **Phase 3A — Repository Foundation & Project Initialization is complete and verified on `main`. Phase 3B — Database Foundation has not started.**
+Group 11 Software Engineering project. **Phase 3A — Repository Foundation & Project Initialization is complete and verified on `main`. Phase 3B — Database Foundation is implemented with completion gated by CI and post-merge verification.**
 
 ## Architecture baseline
 
 - Frontend: React + TypeScript + Vite
 - Backend: FastAPI + Pydantic + SQLAlchemy + Psycopg 3
-- Database: PostgreSQL 18
+- Database: PostgreSQL 18 + Alembic migrations
 - Package managers: pnpm (frontend), uv (backend)
 - Deployment shape: single-origin Dockerized application
 - Local development timezone: `Asia/Kolkata`
 
-Phase 3A intentionally contains no gym business features. It proves the engineering foundation: applications start, API health works, the frontend reaches the API, PostgreSQL connectivity is verified, quality checks run, Docker builds, and CI reproduces the checks.
+Phase 3B adds persistence only: SQLAlchemy tables for members, membership plans, memberships/renewal lineage, attendance, and payments; database constraints/indexes; deterministic Alembic migrations; and integration tests. Business CRUD APIs, authentication/authorization, dashboards, reports, and real source-data imports remain out of scope.
 
 ## Prerequisites
 
@@ -34,15 +34,16 @@ cd frontend && pnpm install && cd ..
 uv sync --project backend --group dev
 ```
 
-## Local development
-
-Start PostgreSQL:
+Start PostgreSQL and apply migrations:
 
 ```bash
 docker compose up -d db
+uv run --project backend alembic -c backend/alembic.ini upgrade head
 ```
 
-Start the backend from the repository root:
+## Local development
+
+Start the backend from the repository root after migrations are current:
 
 ```bash
 uv run --project backend uvicorn app.main:app --app-dir backend --reload --host 0.0.0.0 --port 8000
@@ -64,15 +65,38 @@ Useful endpoints:
 - OpenAPI JSON: `http://localhost:8000/api/openapi.json`
 - Swagger UI: `http://localhost:8000/api/docs`
 
+## Database migrations
+
+Apply all migrations:
+
+```bash
+uv run --project backend alembic -c backend/alembic.ini upgrade head
+```
+
+Inspect the current revision and check model/migration drift:
+
+```bash
+uv run --project backend alembic -c backend/alembic.ini current
+uv run --project backend alembic -c backend/alembic.ini check
+```
+
+Create a future migration only after changing SQLAlchemy metadata:
+
+```bash
+uv run --project backend alembic -c backend/alembic.ini revision --autogenerate -m "describe change"
+```
+
+See [`docs/database.md`](docs/database.md) for schema decisions and invariants.
+
 ## Docker
 
-Build and run the single-origin application plus PostgreSQL:
+Build and run PostgreSQL, the migration job, and the single-origin application:
 
 ```bash
 docker compose up --build
 ```
 
-Then open `http://localhost:8000`. Stop the stack with:
+Compose waits for PostgreSQL, runs `alembic upgrade head`, and only then starts the app. Open `http://localhost:8000`. Stop the stack with:
 
 ```bash
 docker compose down
@@ -91,16 +115,18 @@ pnpm test:run
 pnpm build
 ```
 
-Backend:
+Backend/database:
 
 ```bash
+uv run --project backend alembic -c backend/alembic.ini upgrade head
+uv run --project backend alembic -c backend/alembic.ini check
 uv run --project backend ruff check backend
 uv run --project backend ruff format --check backend
 uv run --project backend mypy backend/app backend/tests
 cd backend && uv run python -m pytest
 ```
 
-Run the local foundation verification helper (after dependencies are installed and PostgreSQL is running):
+Run the complete local foundation verification helper after dependencies are installed and PostgreSQL is running:
 
 ```bash
 bash scripts/verify-foundation.sh
@@ -111,14 +137,18 @@ bash scripts/verify-foundation.sh
 ```text
 .
 ├── frontend/              React/Vite application
-├── backend/               FastAPI application
-├── data/                  Dataset guidance; no production/demo import yet
-├── docs/                  Architecture and workflow notes
+├── backend/
+│   ├── alembic/           Versioned database migrations
+│   ├── alembic.ini        Alembic configuration
+│   ├── app/db/models/     SQLAlchemy persistence models
+│   └── tests/             Backend and database integration tests
+├── data/                  Source-data boundary guidance
+├── docs/                  Architecture, database and workflow notes
 ├── scripts/               Developer verification helpers
 ├── tests/                 Cross-stack/E2E placeholder
 ├── .github/workflows/     CI
-├── Dockerfile             Production single-origin image
-├── docker-compose.yml     Local PostgreSQL + application stack
+├── Dockerfile             Production single-origin image with migration assets
+├── docker-compose.yml     PostgreSQL + migration job + application stack
 ├── .env.example           Non-secret environment contract
 └── README.md
 ```
@@ -131,9 +161,10 @@ Use `main` plus short-lived branches such as `feat/*`, `fix/*`, `docs/*`, `test/
 
 - Never commit `.env` or real secrets.
 - The values in `.env.example` and Compose defaults are development-only placeholders.
-- No card number, CVV, bank credential, or UPI PIN handling belongs in this system.
-- Authentication and authorization are Phase 3C work and are intentionally not implemented in Phase 3A.
+- No card number, CVV, bank credential, UPI PIN, or equivalent payment secret belongs in this system.
+- Phase 3B payments persist transaction metadata only.
+- Authentication and authorization remain Phase 3C work and are intentionally not implemented in Phase 3B.
 
 ## Phase boundary
 
-The Phase 3A exit gate has passed. The next phase is **Phase 3B — Database Foundation**. Business-feature implementation must not begin before its appropriate phase.
+Phase 3B is limited to database persistence, migrations, constraints/indexes, and verification. Business feature/API behavior begins only in its appropriate later phase.
