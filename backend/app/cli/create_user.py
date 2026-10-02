@@ -19,7 +19,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--ensure",
         action="store_true",
-        help=("Succeed without changing credentials when the requested active account already exists."),
+        help="Succeed unchanged when the requested active account already exists.",
     )
     return parser.parse_args()
 
