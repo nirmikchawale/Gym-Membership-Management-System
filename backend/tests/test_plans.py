@@ -1,6 +1,6 @@
 from datetime import date
 from decimal import Decimal
-from uuid import uuid4
+from uuid import UUID, uuid4
 
 from fastapi.testclient import TestClient
 from sqlalchemy.orm import Session
@@ -195,7 +195,7 @@ def test_editing_plan_price_does_not_rewrite_membership_snapshot() -> None:
         db.refresh(member)
         membership = Membership(
             member_id=member.id,
-            plan_id=plan_id,
+            plan_id=UUID(plan_id),
             start_date=date(2026, 10, 2),
             end_date=date(2027, 3, 30),
             status="active",
