@@ -126,7 +126,9 @@ def test_dashboard_reconciles_new_operational_records() -> None:
     expiring_codes = {item["member_code"] for item in dashboard["expiring_soon"]}
     assert f"GST-DASH-{marker}" in expiring_codes
 
-    distribution = {item["plan_code"]: item["memberships"] for item in dashboard["plan_distribution"]}
+    distribution = {
+        item["plan_code"]: item["memberships"] for item in dashboard["plan_distribution"]
+    }
     assert distribution[f"DASH-{marker}"] == 1
     assert "revenue" not in dashboard
     assert "payments" not in dashboard
