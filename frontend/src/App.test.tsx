@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react'
+import { fireEvent, render, screen } from '@testing-library/react'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { App } from './App'
 
@@ -16,6 +16,20 @@ const authenticatedUser = {
   role: 'admin',
 }
 
+const memberRecord = {
+  id: '00000000-0000-0000-0000-000000000111',
+  member_code: 'GST-TEST01',
+  first_name: 'Aarav',
+  last_name: 'Mehta',
+  email: 'aarav@example.test',
+  phone: '+91 90000 00001',
+  date_of_birth: null,
+  joined_on: '2026-09-01',
+  is_active: true,
+  created_at: '2026-09-01T00:00:00Z',
+  updated_at: '2026-09-01T00:00:00Z',
+}
+
 function mockFetch(authenticated: boolean) {
   vi.stubGlobal(
     'fetch',
@@ -27,6 +41,9 @@ function mockFetch(authenticated: boolean) {
             ? jsonResponse(authenticatedUser)
             : jsonResponse({ detail: 'Authentication required' }, 401),
         )
+      }
+      if (url.includes('/api/v1/members')) {
+        return Promise.resolve(jsonResponse({ items: [memberRecord], total: 1, limit: 20, offset: 0 }))
       }
       return Promise.resolve(
         jsonResponse({
@@ -44,9 +61,11 @@ describe('App', () => {
   afterEach(() => {
     vi.unstubAllGlobals()
     window.history.replaceState({}, '', '/')
+    window.localStorage.clear()
+    delete document.documentElement.dataset.theme
   })
 
-  it('shows the redesigned Gridstone sign-in experience for an anonymous session', async () => {
+  it('shows sign-in and exposes a theme switch for anonymous sessions', async () => {
     mockFetch(false)
     render(<App />)
 
@@ -54,10 +73,11 @@ describe('App', () => {
       await screen.findByRole('heading', { name: /run the floor\. keep the business moving/i }),
     ).toBeVisible()
     expect(screen.getByRole('button', { name: /enter gridstone/i })).toBeVisible()
+    expect(screen.getByRole('button', { name: /switch to light mode/i })).toBeVisible()
     expect(await screen.findByText(/API \+ PostgreSQL online/i)).toBeVisible()
   })
 
-  it('shows the populated Gridstone workspace for an authenticated session', async () => {
+  it('shows the member-focused Gridstone workspace for an authenticated session', async () => {
     mockFetch(true)
     render(<App />)
 
@@ -66,19 +86,39 @@ describe('App', () => {
     ).toBeVisible()
     expect(screen.getAllByText(/Gridstone Admin/i)).toHaveLength(2)
     expect(screen.getByRole('link', { name: /^members$/i })).toBeVisible()
-    expect(screen.getByText(/Synthetic demo · 02 Oct 2026/i)).toBeVisible()
     expect(screen.getByRole('button', { name: /sign out/i })).toBeVisible()
   })
 
-  it('supports direct deep links to populated module surfaces', async () => {
+  it('supports the completed Members vertical slice', async () => {
+    window.history.replaceState({}, '', '/members')
+    mockFetch(true)
+    render(<App />)
+
+    expect(await screen.findByRole('heading', { name: 'Members', level: 1 })).toBeVisible()
+    expect(await screen.findByText(/Aarav Mehta/i)).toBeVisible()
+    expect(screen.getByRole('button', { name: /add member/i })).toBeVisible()
+    expect(screen.getByPlaceholderText(/search name, code, email, phone or plan/i)).toBeVisible()
+  })
+
+  it('keeps later slices explicitly outside the current phase', async () => {
     window.history.replaceState({}, '', '/attendance')
     mockFetch(true)
     render(<App />)
 
     expect(await screen.findByRole('heading', { name: 'Attendance', level: 1 })).toBeVisible()
-    expect(screen.getByText(/Demo data live/i)).toBeVisible()
-    expect(screen.getByRole('heading', { name: /Today’s check-ins/i })).toBeVisible()
-    expect(screen.getByText(/Aarav Mehta/i)).toBeVisible()
+    expect(screen.getByText(/Later approved slice/i)).toBeVisible()
     expect(screen.queryByText(/Feature slice not started/i)).not.toBeInTheDocument()
+  })
+
+  it('persists explicit light and dark theme selection', async () => {
+    mockFetch(true)
+    render(<App />)
+    await screen.findByRole('heading', { name: /the front desk, without the friction/i })
+
+    const toggle = screen.getByRole('button', { name: /switch to light mode/i })
+    fireEvent.click(toggle)
+    expect(document.documentElement.dataset.theme).toBe('light')
+    expect(window.localStorage.getItem('gridstone-theme')).toBe('light')
+    expect(screen.getByRole('button', { name: /switch to dark mode/i })).toBeVisible()
   })
 })

@@ -5,6 +5,7 @@ import type { AuthUser } from '../lib/api'
 import type { HealthState } from '../lib/app-state'
 import { navItems } from '../lib/navigation'
 import { Brand } from './Brand'
+import { ThemeToggle } from './ThemeToggle'
 import { Badge, Button } from './ui'
 
 function initials(name: string) {
@@ -105,7 +106,7 @@ export function WorkspaceShell({
 
         <div className="workspace-chip">
           <span className="workspace-chip__dot" aria-hidden="true" />
-          <span>{publicPreview ? 'Public design preview' : 'Operations workspace'}</span>
+          <span>{publicPreview ? 'Members public preview' : 'Operations workspace'}</span>
         </div>
 
         <nav className="nav-list">
@@ -143,7 +144,7 @@ export function WorkspaceShell({
           </div>
           <p className="sidebar__caption">
             {publicPreview
-              ? 'Phase 3D · Public Vercel preview'
+              ? 'Members demo · 112 synthetic records'
               : 'Asia/Kolkata · Secure staff session'}
           </p>
         </div>
@@ -163,7 +164,7 @@ export function WorkspaceShell({
             <div>
               <p className="topbar__eyebrow">Gridstone / {currentItem.label}</p>
               <p className="topbar__title">
-                {publicPreview ? 'Public design preview' : 'Operations workspace'}
+                {publicPreview ? 'Members product preview' : 'Operations workspace'}
               </p>
             </div>
           </div>
@@ -183,6 +184,8 @@ export function WorkspaceShell({
               <span className="badge__dot" aria-hidden="true" />
               {systemLabel}
             </Badge>
+
+            <ThemeToggle compact />
 
             <div className="user-chip">
               <span className="user-chip__avatar" aria-hidden="true">

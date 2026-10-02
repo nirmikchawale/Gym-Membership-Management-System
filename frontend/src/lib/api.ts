@@ -12,6 +12,39 @@ export type AuthUser = {
   role: 'admin' | 'staff'
 }
 
+export type MemberRecord = {
+  id: string
+  member_code: string
+  first_name: string
+  last_name: string
+  email: string | null
+  phone: string | null
+  date_of_birth: string | null
+  joined_on: string
+  is_active: boolean
+  created_at: string
+  updated_at: string
+}
+
+export type MemberInput = {
+  member_code?: string
+  first_name: string
+  last_name: string
+  email?: string | null
+  phone?: string | null
+  date_of_birth?: string | null
+  joined_on?: string
+}
+
+export type MemberUpdateInput = Partial<MemberInput>
+
+export type MemberListResponse = {
+  items: MemberRecord[]
+  total: number
+  limit: number
+  offset: number
+}
+
 type LoginResponse = {
   user: AuthUser
 }
@@ -90,17 +123,20 @@ function readCookie(...names: string[]): string | null {
   return null
 }
 
-export async function logout(): Promise<void> {
+function csrfHeaders(): Record<string, string> {
   const csrfToken = readCookie('__Host-gridstone_csrf', 'gridstone_csrf')
   if (!csrfToken) {
     throw new Error('Your session security token is missing. Refresh and try again.')
   }
+  return { 'X-CSRF-Token': csrfToken }
+}
 
+export async function logout(): Promise<void> {
   const response = await fetch('/api/v1/auth/logout', {
     method: 'POST',
     headers: {
       Accept: 'application/json',
-      'X-CSRF-Token': csrfToken,
+      ...csrfHeaders(),
     },
     credentials: 'same-origin',
   })
@@ -108,4 +144,76 @@ export async function logout(): Promise<void> {
   if (!response.ok) {
     throw new Error(await errorMessage(response, 'Unable to sign out'))
   }
+}
+
+export async function listMembers({
+  query,
+  status = 'all',
+  limit = 20,
+  offset = 0,
+  signal,
+}: {
+  query?: string
+  status?: 'all' | 'active' | 'inactive'
+  limit?: number
+  offset?: number
+  signal?: AbortSignal
+} = {}): Promise<MemberListResponse> {
+  const params = new URLSearchParams({ status, limit: String(limit), offset: String(offset) })
+  if (query?.trim()) params.set('query', query.trim())
+
+  const response = await fetch(`/api/v1/members?${params.toString()}`, {
+    method: 'GET',
+    headers: { Accept: 'application/json' },
+    credentials: 'same-origin',
+    signal,
+  })
+  if (!response.ok) throw new Error(await errorMessage(response, 'Unable to load members'))
+  return (await response.json()) as MemberListResponse
+}
+
+export async function createMember(payload: MemberInput): Promise<MemberRecord> {
+  const response = await fetch('/api/v1/members', {
+    method: 'POST',
+    headers: {
+      Accept: 'application/json',
+      'Content-Type': 'application/json',
+      ...csrfHeaders(),
+    },
+    credentials: 'same-origin',
+    body: JSON.stringify(payload),
+  })
+  if (!response.ok) throw new Error(await errorMessage(response, 'Unable to create member'))
+  return (await response.json()) as MemberRecord
+}
+
+export async function updateMember(
+  memberId: string,
+  payload: MemberUpdateInput,
+): Promise<MemberRecord> {
+  const response = await fetch(`/api/v1/members/${memberId}`, {
+    method: 'PATCH',
+    headers: {
+      Accept: 'application/json',
+      'Content-Type': 'application/json',
+      ...csrfHeaders(),
+    },
+    credentials: 'same-origin',
+    body: JSON.stringify(payload),
+  })
+  if (!response.ok) throw new Error(await errorMessage(response, 'Unable to update member'))
+  return (await response.json()) as MemberRecord
+}
+
+export async function setMemberActive(memberId: string, isActive: boolean): Promise<MemberRecord> {
+  const action = isActive ? 'activate' : 'deactivate'
+  const response = await fetch(`/api/v1/members/${memberId}/${action}`, {
+    method: 'POST',
+    headers: { Accept: 'application/json', ...csrfHeaders() },
+    credentials: 'same-origin',
+  })
+  if (!response.ok) {
+    throw new Error(await errorMessage(response, `Unable to ${action} member`))
+  }
+  return (await response.json()) as MemberRecord
 }
