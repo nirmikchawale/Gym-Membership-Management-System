@@ -194,12 +194,12 @@ def main() -> None:
         dashboard = _expect(client.get("/api/v1/dashboard"), 200, "dashboard").json()
         if dashboard["members"]["total"] < 1:
             raise SystemExit("Dashboard member totals are unexpectedly empty")
-        if dashboard["attendance"]["visits_in_window"] < 1:
+        if dashboard["attendance"]["period_checkins"] < 1:
             raise SystemExit("Dashboard attendance totals did not include verification visit")
         print(
             "PASS dashboard "
             f"members_total={dashboard['members']['total']} "
-            f"visits_in_window={dashboard['attendance']['visits_in_window']}"
+            f"period_checkins={dashboard['attendance']['period_checkins']}"
         )
 
         report = _expect(
@@ -207,10 +207,11 @@ def main() -> None:
             200,
             "reporting",
         ).json()
+        if report["trend_days"] != 30 or report["expiring_within_days"] != 90:
+            raise SystemExit("Reporting window did not match the requested values")
         print(
             "PASS reporting "
-            f"trend_days={report['attendance']['trend_days']} "
-            f"expiring_days={report['memberships']['expiring_within_days']}"
+            f"trend_days={report['trend_days']} expiring_days={report['expiring_within_days']}"
         )
 
         _expect(client.post("/api/v1/auth/logout", headers=headers), 204, "logout")
