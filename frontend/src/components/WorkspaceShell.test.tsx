@@ -27,7 +27,11 @@ function renderShell() {
         <Route
           path="/"
           element={
-            <WorkspaceShell user={user} health={health} onLogout={async () => undefined} />
+            <WorkspaceShell
+              user={user}
+              health={health}
+              onLogout={async () => undefined}
+            />
           }
         >
           <Route index element={<p>Workspace content</p>} />
