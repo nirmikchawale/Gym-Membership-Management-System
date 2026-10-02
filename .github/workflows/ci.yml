@@ -98,6 +98,7 @@ jobs:
         working-directory: frontend
         run: |
           pnpm install --frozen-lockfile
+          pnpm audit --prod --audit-level moderate
           pnpm audit --audit-level high
       - uses: astral-sh/setup-uv@v6
         with:
