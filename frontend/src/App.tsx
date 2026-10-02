@@ -10,6 +10,7 @@ import { Button } from './components/ui'
 import { WorkspaceShell } from './components/WorkspaceShell'
 import { HomePage } from './pages/HomePage'
 import { LoginPage } from './pages/LoginPage'
+import { MembersPage } from './pages/MembersPage'
 import { ModulePage } from './pages/ModulePage'
 import { NotFoundPage } from './pages/NotFoundPage'
 
@@ -26,8 +27,8 @@ const publicPreviewUser: AuthUser = {
   role: 'staff',
 }
 
-function isVercelPublicPreview() {
-  return window.location.hostname.endsWith('.vercel.app')
+function isPublicPreviewBuild() {
+  return import.meta.env.VITE_PUBLIC_PREVIEW === 'true'
 }
 
 function BootScreen() {
@@ -63,7 +64,7 @@ function SessionError({ message }: { message: string }) {
 function GridstoneApplication() {
   useScrollTide()
 
-  const publicPreview = isVercelPublicPreview()
+  const publicPreview = isPublicPreviewBuild()
   const [auth, setAuth] = useState<AuthState>(
     publicPreview ? { kind: 'authenticated', user: publicPreviewUser } : { kind: 'loading' },
   )
@@ -120,6 +121,8 @@ function GridstoneApplication() {
     setAuth({ kind: 'anonymous' })
   }
 
+  const laterModules = moduleDefinitions.filter((module) => module.path !== '/members')
+
   return (
     <Routes>
       <Route
@@ -134,7 +137,8 @@ function GridstoneApplication() {
       >
         <Route index element={<HomePage user={auth.user} health={health} />} />
         <Route path="dashboard" element={<Navigate to="/" replace />} />
-        {moduleDefinitions.map((module) => (
+        <Route path="members" element={<MembersPage publicPreview={publicPreview} />} />
+        {laterModules.map((module) => (
           <Route
             key={module.path}
             path={module.path.slice(1)}

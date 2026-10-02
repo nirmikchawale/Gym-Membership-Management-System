@@ -3,6 +3,7 @@ import { ArrowRight, LockKeyhole, ShieldCheck, Sparkles } from 'lucide-react'
 import { login, type AuthUser } from '../lib/api'
 import type { HealthState } from '../lib/app-state'
 import { Brand } from '../components/Brand'
+import { ThemeToggle } from '../components/ThemeToggle'
 import { Button } from '../components/ui'
 
 function healthCopy(health: HealthState) {
@@ -44,6 +45,10 @@ export function LoginPage({
         <span className="ambient-orb ambient-orb--two" />
       </div>
 
+      <div className="login-theme-toggle">
+        <ThemeToggle />
+      </div>
+
       <section className="login-visual" aria-labelledby="gridstone-login-title">
         <Brand />
 
@@ -51,8 +56,8 @@ export function LoginPage({
           <p className="kicker">Gym operations, rebuilt</p>
           <h1 id="gridstone-login-title">Run the floor. Keep the business moving.</h1>
           <p className="login-lede">
-            One secure workspace for memberships, attendance, payments and the daily handoffs that
-            keep a gym moving.
+            One secure workspace for member operations today, with the remaining gym workflows
+            delivered as later approved product slices.
           </p>
 
           <div className="login-feature-row" aria-label="Gridstone product principles">
@@ -80,8 +85,8 @@ export function LoginPage({
           <div>
             <p className="proof-card__eyebrow">Built for pressure</p>
             <p className="proof-card__copy">
-              Clear hierarchy, large touch targets and deliberate motion keep the interface calm
-              when the desk gets busy.
+              Clear hierarchy, large touch targets, responsive layouts and user-selectable light or
+              dark mode keep the interface calm when the desk gets busy.
             </p>
           </div>
         </div>

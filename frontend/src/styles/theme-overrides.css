@@ -1,0 +1,28 @@
+html[data-theme='light'] .data-table tbody tr:hover,
+html[data-theme='light'] .member-row--selected {
+  background: rgb(83 111 232 / 6%);
+}
+
+html[data-theme='light'] .member-cell__avatar,
+html[data-theme='light'] .member-detail__avatar {
+  border-color: rgb(83 111 232 / 24%);
+  background: rgb(83 111 232 / 9%);
+  color: #344fc4;
+}
+
+html[data-theme='light'] .search-field input::placeholder {
+  color: #7a8596;
+}
+
+html[data-theme='light'] .demo-notice {
+  background:
+    linear-gradient(135deg, rgb(83 111 232 / 8%), rgb(118 87 216 / 3%)), rgb(255 255 255 / 78%);
+}
+
+html[data-theme='light'] .bar-track {
+  background: #e6ebf3;
+}
+
+html[data-theme='light'] .member-form-dialog {
+  background: rgb(27 37 54 / 38%);
+}

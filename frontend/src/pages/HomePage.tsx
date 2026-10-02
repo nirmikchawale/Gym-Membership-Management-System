@@ -1,35 +1,27 @@
 import {
   ArrowUpRight,
-  CalendarClock,
   Database,
-  IndianRupee,
   KeyRound,
-  UserRoundCheck,
+  ShieldCheck,
+  Smartphone,
+  Sparkles,
   UsersRound,
 } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import type { AuthUser } from '../lib/api'
 import type { HealthState } from '../lib/app-state'
-import {
-  demoAttendance,
-  demoDataset,
-  demoMetrics,
-  demoMemberships,
-  formatINR,
-} from '../lib/demo-data'
+import { registeredDemoMemberMetrics, registeredDemoMembers } from '../lib/registered-demo-members'
 import { moduleDefinitions } from '../lib/navigation'
 import { Badge } from '../components/ui'
 
 function databaseCopy(health: HealthState) {
   if (health.kind === 'loaded') return 'PostgreSQL connected'
-  return 'Public preview uses synthetic read-only data'
+  if (health.kind === 'error') return 'Public preview or backend unavailable'
+  return 'Verifying connection'
 }
 
 export function HomePage({ user, health }: { user: AuthUser; health: HealthState }) {
-  const expiringMembers = demoMemberships
-    .filter((membership) => membership.status === 'Expiring')
-    .slice(0, 3)
-  const latestVisits = demoAttendance.filter((visit) => visit.date === demoDataset.asOf).slice(-4)
+  const recentDemoMembers = registeredDemoMembers.slice(-4).reverse()
 
   return (
     <div className="page-stack">
@@ -38,41 +30,44 @@ export function HomePage({ user, health }: { user: AuthUser; health: HealthState
           <p className="page-eyebrow">Gridstone workspace</p>
           <h1>The front desk, without the friction.</h1>
           <p>
-            Welcome, <strong>{user.full_name}</strong>. This public build now includes a populated,
-            synthetic gym dataset so every operational module can be explored end to end.
+            Welcome, <strong>{user.full_name}</strong>. Phase 3D is verified and the Members
+            vertical slice is now the active product workflow.
           </p>
         </div>
-        <Badge tone="accent">Synthetic demo · 02 Oct 2026</Badge>
+        <Badge tone="accent">
+          <Sparkles size={13} aria-hidden="true" />
+          Members slice active
+        </Badge>
       </header>
 
-      <section className="hero-grid" aria-label="Gridstone demo overview">
+      <section className="hero-grid" aria-label="Gridstone member operations overview">
         <article className="hero-panel">
           <div className="hero-panel__glow" aria-hidden="true" />
           <div className="hero-copy">
-            <p className="hero-kicker">Live product preview</p>
-            <h2>Real workflows. Safe demo records.</h2>
+            <p className="hero-kicker">Current product slice</p>
+            <h2>Member operations are now real.</h2>
             <p>
-              Members, plans, renewals, attendance, payments and reports now contain realistic
-              example entries. Nothing here is scraped or personal: the entire preview dataset is
-              fabricated for Gridstone.
+              The authenticated app supports member search, filtering, profiles, creation, editing,
+              activation and deactivation. The public preview carries 112 safe synthetic member
+              records so the same responsive experience can be explored without exposing real data.
             </p>
             <Link className="text-link" to="/members">
               Open the member directory <ArrowUpRight size={16} aria-hidden="true" />
             </Link>
           </div>
 
-          <div className="hero-metrics" aria-label="Gridstone demo metrics">
+          <div className="hero-metrics" aria-label="Gridstone member metrics">
             <div className="hero-metric">
-              <strong>{demoMetrics.activeMembers}</strong>
-              <span>active demo members</span>
+              <strong>{registeredDemoMemberMetrics.total}</strong>
+              <span>synthetic preview members</span>
             </div>
             <div className="hero-metric">
-              <strong>{demoMetrics.visitsToday}</strong>
-              <span>check-ins today</span>
+              <strong>{registeredDemoMemberMetrics.active}</strong>
+              <span>active demo records</span>
             </div>
             <div className="hero-metric">
-              <strong>{formatINR(demoMetrics.collectedRevenue)}</strong>
-              <span>recorded demo revenue</span>
+              <strong>{registeredDemoMemberMetrics.paused}</strong>
+              <span>paused demo records</span>
             </div>
           </div>
         </article>
@@ -80,98 +75,62 @@ export function HomePage({ user, health }: { user: AuthUser; health: HealthState
         <article className="signal-panel">
           <div className="signal-panel__header">
             <div>
-              <p className="card-eyebrow">Workspace signal</p>
-              <h2>Today at a glance</h2>
+              <p className="card-eyebrow">Foundation signal</p>
+              <h2>System status</h2>
             </div>
-            <span className="signal-light signal-light--loaded" aria-hidden="true" />
+            <span className={`signal-light signal-light--${health.kind}`} aria-hidden="true" />
           </div>
-
           <div className="signal-list">
             <div className="signal-row">
               <span className="signal-row__icon">
-                <UsersRound size={17} aria-hidden="true" />
+                <Database size={17} aria-hidden="true" />
               </span>
               <span>
-                <strong>{demoMetrics.members} member records</strong>
-                <small>{demoMetrics.activeMembers} active · 1 paused</small>
+                <strong>Data backbone</strong>
+                <small>{databaseCopy(health)}</small>
               </span>
             </div>
             <div className="signal-row">
               <span className="signal-row__icon">
-                <CalendarClock size={17} aria-hidden="true" />
+                <KeyRound size={17} aria-hidden="true" />
               </span>
               <span>
-                <strong>{demoMetrics.expiringMemberships} renewals need attention</strong>
-                <small>Surfaced from the demo membership ledger</small>
+                <strong>Staff identity</strong>
+                <small>Opaque sessions + CSRF protection</small>
               </span>
             </div>
             <div className="signal-row">
               <span className="signal-row__icon">
-                <UserRoundCheck size={17} aria-hidden="true" />
+                <ShieldCheck size={17} aria-hidden="true" />
               </span>
               <span>
-                <strong>{demoMetrics.inGymNow} members currently in gym</strong>
-                <small>Open visits remain visible until checkout</small>
+                <strong>Members API</strong>
+                <small>Authenticated, validated and paginated</small>
               </span>
             </div>
           </div>
         </article>
       </section>
 
-      <section aria-labelledby="module-heading">
-        <div className="section-heading">
-          <div>
-            <p className="card-eyebrow">Operational map</p>
-            <h2 id="module-heading">Every module now has visible data.</h2>
-          </div>
-          <p>
-            The public preview is read-only by design. It demonstrates information architecture and
-            workflows without pretending that synthetic records are production data.
-          </p>
-        </div>
-
-        <div className="module-grid">
-          {moduleDefinitions.map((module, index) => {
-            const Icon = module.icon
-            return (
-              <Link className="module-card" to={module.path} key={module.path}>
-                <span
-                  className={`module-card__icon module-card__icon--${(index % 3) + 1}`}
-                  aria-hidden="true"
-                >
-                  <Icon size={20} strokeWidth={1.8} />
-                </span>
-                <span className="module-card__body">
-                  <span className="module-card__meta">{module.eyebrow}</span>
-                  <strong>{module.label}</strong>
-                  <small>{module.description}</small>
-                </span>
-                <ArrowUpRight className="module-card__arrow" size={17} aria-hidden="true" />
-              </Link>
-            )
-          })}
-        </div>
-      </section>
-
-      <section className="report-grid" aria-label="Gridstone demo operations">
+      <section className="report-grid" aria-label="Member preview summary">
         <article className="data-card">
           <div className="data-card__header">
             <div>
-              <p className="card-eyebrow">Renewal queue</p>
-              <h2>Expiring memberships</h2>
+              <p className="card-eyebrow">Registered preview</p>
+              <h2>Latest synthetic members</h2>
             </div>
-            <Badge tone="warning">{expiringMembers.length} priority</Badge>
+            <Badge tone="success">+100 entries added</Badge>
           </div>
           <div className="compact-list">
-            {expiringMembers.map((membership) => (
-              <div className="compact-list__row" key={membership.id}>
+            {recentDemoMembers.map((member) => (
+              <div className="compact-list__row" key={member.code}>
                 <span>
-                  <strong>{membership.memberName}</strong>
-                  <small>{membership.planName}</small>
+                  <strong>{member.name}</strong>
+                  <small>{member.code}</small>
                 </span>
                 <span>
-                  <strong>{membership.endsOn}</strong>
-                  <small>{formatINR(membership.value)}</small>
+                  <strong>{member.planCode}</strong>
+                  <small>{member.status}</small>
                 </span>
               </div>
             ))}
@@ -181,60 +140,59 @@ export function HomePage({ user, health }: { user: AuthUser; health: HealthState
         <article className="data-card">
           <div className="data-card__header">
             <div>
-              <p className="card-eyebrow">Recent activity</p>
-              <h2>Latest check-ins</h2>
+              <p className="card-eyebrow">Delivery sequence</p>
+              <h2>What stays outside this slice</h2>
             </div>
-            <Badge tone="success">{demoMetrics.inGymNow} open</Badge>
+            <Badge tone="neutral">Scope locked</Badge>
           </div>
           <div className="compact-list">
-            {latestVisits.map((visit) => (
-              <div className="compact-list__row" key={visit.id}>
-                <span>
-                  <strong>{visit.memberName}</strong>
-                  <small>{visit.memberCode}</small>
-                </span>
-                <span>
-                  <strong>{visit.checkIn}</strong>
-                  <small>{visit.checkOut ?? 'In gym now'}</small>
-                </span>
-              </div>
-            ))}
+            {moduleDefinitions
+              .filter((module) => module.path !== '/members')
+              .slice(0, 4)
+              .map((module) => (
+                <div className="compact-list__row" key={module.path}>
+                  <span>
+                    <strong>{module.label}</strong>
+                    <small>{module.eyebrow}</small>
+                  </span>
+                  <span>
+                    <strong>Later</strong>
+                    <small>approved slice</small>
+                  </span>
+                </div>
+              ))}
           </div>
         </article>
       </section>
 
-      <section className="principle-grid" aria-label="Gridstone preview guarantees">
+      <section className="principle-grid" aria-label="Gridstone member slice principles">
         <article className="principle-card">
           <span>
-            <Database size={19} aria-hidden="true" />
+            <UsersRound size={19} aria-hidden="true" />
           </span>
           <div>
-            <strong>Demo data is explicit</strong>
-            <p>{databaseCopy(health)}. No real member records are exposed in this deployment.</p>
+            <strong>112-record public dataset</strong>
+            <p>All preview member identities and contacts are synthetic and deterministic.</p>
           </div>
         </article>
         <article className="principle-card">
           <span>
-            <KeyRound size={19} aria-hidden="true" />
+            <Smartphone size={19} aria-hidden="true" />
           </span>
           <div>
-            <strong>Secure architecture remains intact</strong>
+            <strong>Desktop and mobile</strong>
             <p>
-              The FastAPI/PostgreSQL session architecture remains in the source; this Vercel surface
-              is a public read-only preview.
+              The directory changes from a table to touch-friendly member cards at narrow widths.
             </p>
           </div>
         </article>
         <article className="principle-card">
           <span>
-            <IndianRupee size={19} aria-hidden="true" />
+            <Sparkles size={19} aria-hidden="true" />
           </span>
           <div>
-            <strong>Payment data stays safe</strong>
-            <p>
-              The preview contains only synthetic payment metadata and never stores card numbers,
-              CVV, UPI PINs or bank credentials.
-            </p>
+            <strong>Light and dark themes</strong>
+            <p>The user can switch modes at any time; the preference persists on the device.</p>
           </div>
         </article>
       </section>
