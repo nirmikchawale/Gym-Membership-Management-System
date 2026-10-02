@@ -47,6 +47,11 @@ def _apply_security_headers(request: Request, response: Response) -> None:
             "frame-src 'none'; form-action 'self'; img-src 'self' data:; font-src 'self'; "
             "script-src 'self'; style-src 'self'; connect-src 'self'"
         )
+        response.headers["Cache-Control"] = (
+            "public, max-age=31536000, immutable"
+            if request.url.path.startswith("/assets/")
+            else "no-cache"
+        )
 
     if not _is_nonproduction:
         response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"
