@@ -15,9 +15,7 @@ type AuthState =
   | { kind: 'error'; message: string }
 
 type HealthState =
-  | { kind: 'loading' }
-  | { kind: 'loaded'; data: HealthResponse }
-  | { kind: 'error' }
+  { kind: 'loading' } | { kind: 'loaded'; data: HealthResponse } | { kind: 'error' }
 
 function LoginPanel({ onAuthenticated }: { onAuthenticated: (user: AuthUser) => void }) {
   const [email, setEmail] = useState('')
@@ -87,13 +85,7 @@ function LoginPanel({ onAuthenticated }: { onAuthenticated: (user: AuthUser) => 
   )
 }
 
-function AuthenticatedShell({
-  user,
-  onSignedOut,
-}: {
-  user: AuthUser
-  onSignedOut: () => void
-}) {
+function AuthenticatedShell({ user, onSignedOut }: { user: AuthUser; onSignedOut: () => void }) {
   const [signoutError, setSignoutError] = useState<string | null>(null)
 
   async function handleLogout() {
@@ -160,9 +152,7 @@ export function App() {
     const controller = new AbortController()
 
     void getCurrentUser(controller.signal)
-      .then((user) =>
-        setAuth(user ? { kind: 'authenticated', user } : { kind: 'anonymous' }),
-      )
+      .then((user) => setAuth(user ? { kind: 'authenticated', user } : { kind: 'anonymous' }))
       .catch((error: unknown) => {
         if (controller.signal.aborted) return
         setAuth({

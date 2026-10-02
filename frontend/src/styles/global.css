@@ -50,8 +50,7 @@ body {
   overflow-x: hidden;
   background:
     radial-gradient(circle at 85% 0%, rgb(139 184 255 / 11%), transparent 34rem),
-    radial-gradient(circle at 10% 85%, rgb(196 217 255 / 5%), transparent 28rem),
-    var(--color-bg);
+    radial-gradient(circle at 10% 85%, rgb(196 217 255 / 5%), transparent 28rem), var(--color-bg);
   color: var(--color-text);
 }
 
