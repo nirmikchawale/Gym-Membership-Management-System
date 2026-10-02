@@ -42,6 +42,22 @@ def test_dashboard_requires_authentication() -> None:
     assert client.get("/api/v1/dashboard").status_code == 401
 
 
+def test_dashboard_supports_bounded_reporting_windows() -> None:
+    client = _login()
+
+    response = client.get("/api/v1/dashboard?trend_days=14&expiring_days=60")
+    assert response.status_code == 200
+    dashboard = response.json()
+    assert dashboard["trend_days"] == 14
+    assert dashboard["expiring_within_days"] == 60
+    assert len(dashboard["attendance_trend"]) == 14
+
+    assert client.get("/api/v1/dashboard?trend_days=6").status_code == 422
+    assert client.get("/api/v1/dashboard?trend_days=31").status_code == 422
+    assert client.get("/api/v1/dashboard?expiring_days=29").status_code == 422
+    assert client.get("/api/v1/dashboard?expiring_days=91").status_code == 422
+
+
 def test_dashboard_reconciles_new_operational_records() -> None:
     client = _login()
     baseline_response = client.get("/api/v1/dashboard")
@@ -91,6 +107,8 @@ def test_dashboard_reconciles_new_operational_records() -> None:
     assert response.status_code == 200
     dashboard = response.json()
 
+    assert dashboard["trend_days"] == 7
+    assert dashboard["expiring_within_days"] == 30
     assert dashboard["members"]["total"] == baseline["members"]["total"] + 1
     assert dashboard["members"]["active"] == baseline["members"]["active"] + 1
     assert dashboard["memberships"]["total"] == baseline["memberships"]["total"] + 1
@@ -98,12 +116,12 @@ def test_dashboard_reconciles_new_operational_records() -> None:
     assert dashboard["attendance"]["open_visits"] == baseline["attendance"]["open_visits"] + 1
     assert dashboard["attendance"]["today_checkins"] == baseline["attendance"]["today_checkins"] + 1
     assert (
-        dashboard["attendance"]["last_7_days_checkins"]
-        == baseline["attendance"]["last_7_days_checkins"] + 1
+        dashboard["attendance"]["period_checkins"]
+        == baseline["attendance"]["period_checkins"] + 1
     )
-    assert sum(day["checkins"] for day in dashboard["attendance_trend"]) == dashboard["attendance"][
-        "last_7_days_checkins"
-    ]
+    assert sum(day["checkins"] for day in dashboard["attendance_trend"]) == dashboard[
+        "attendance"
+    ]["period_checkins"]
 
     expiring_codes = {item["member_code"] for item in dashboard["expiring_soon"]}
     assert f"GST-DASH-{marker}" in expiring_codes
