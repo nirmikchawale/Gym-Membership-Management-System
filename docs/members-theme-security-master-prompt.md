@@ -80,5 +80,8 @@ Before merge:
 ## Git protocol
 Work on a short-lived branch. Open a PR. Do not merge until every CI job is green. Fix CI findings, rerun, merge with exact head SHA, then verify `main` CI. Mirror the verified frontend/theme/security-preview changes to the Vercel-connected `nirmikchawale/gridstone` repository without promoting the application as final production. The public URL remains a preview until all later slices and final hardening are complete.
 
+## Execution checkpoint
+The automated formatter is allowed to make only mechanical style corrections. After that formatter commit, add a normal repository-owner commit so the standard PR CI runs on the formatted source before merge.
+
 ## Completion language
 Use PLANNED → DESIGNED → IMPLEMENTED → TESTED → COMMITTED → MERGED → VERIFIED. For the public Vercel surface, `DEPLOYED` means preview deployment only. Do not call Gridstone fully production-ready until the approved later product slices and final hardening are complete.
