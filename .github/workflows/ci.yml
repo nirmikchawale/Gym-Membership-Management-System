@@ -90,16 +90,24 @@ jobs:
       - uses: actions/checkout@v4
       - name: Build and start stack
         run: docker compose up -d --build
-      - name: Verify single-origin app, migrations, API and PostgreSQL
+      - name: Verify single-origin app, deep links, migrations, API and PostgreSQL
         run: |
+          healthy=false
           for attempt in {1..30}; do
             if curl --fail --silent --show-error http://localhost:8000/api/v1/health; then
-              exit 0
+              healthy=true
+              break
             fi
             sleep 2
           done
-          docker compose logs
-          exit 1
+
+          if [ "$healthy" != true ]; then
+            docker compose logs
+            exit 1
+          fi
+
+          curl --fail --silent --show-error http://localhost:8000/ | grep -q '<title>Gridstone'
+          curl --fail --silent --show-error http://localhost:8000/members | grep -q '<title>Gridstone'
       - name: Stop stack
         if: always()
         run: docker compose down -v
