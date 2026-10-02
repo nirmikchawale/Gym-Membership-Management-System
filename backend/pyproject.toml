@@ -1,13 +1,14 @@
 [project]
-name = "gym-membership-management-backend"
-version = "0.1.0"
-description = "FastAPI backend for the Gym Membership Management System"
+name = "gridstone-backend"
+version = "0.2.0"
+description = "FastAPI backend for Gridstone gym membership management"
 requires-python = ">=3.14,<3.15"
 dependencies = [
   "alembic>=1.16",
   "fastapi>=0.118",
   "pydantic-settings>=2.10",
   "psycopg[binary]>=3.2",
+  "pwdlib[argon2]>=0.3",
   "sqlalchemy>=2.0",
   "uvicorn[standard]>=0.35",
 ]
