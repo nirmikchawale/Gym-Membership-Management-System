@@ -135,6 +135,8 @@ jobs:
 
           curl --fail --silent --show-error http://localhost:8000/ | grep -q '<title>Gridstone'
           curl --fail --silent --show-error http://localhost:8000/members | grep -q '<title>Gridstone'
+          curl --fail --silent --show-error http://localhost:8000/memberships | grep -q '<title>Gridstone'
+          curl --fail --silent --show-error http://localhost:8000/attendance | grep -q '<title>Gridstone'
           curl --fail --silent --show-error -D - -o /dev/null http://localhost:8000/api/v1/health | grep -qi 'x-content-type-options: nosniff'
       - name: Stop stack
         if: always()
