@@ -1,25 +1,24 @@
 # Phase 4G — Production Infrastructure
 
-Status: IMPLEMENTED ON PHASE BRANCH; provider candidate healthy; pending PR/exact-main verification before phase is marked VERIFIED.
+**Status: COMPLETE + VERIFIED.**
 
-## Baseline
+## Authoritative result
 
-- Baseline `main` SHA: `601ebec5f85c3f24366959a44a15530cb25e6075`
-- Baseline CI: GitHub Actions CI passed on the exact baseline SHA.
-- Phase branch: `feat/phase-4g-production-infrastructure`
-- Rollback refs already existed before implementation: `rollback/phase-4g-pre-production` and `rollback/pre-4g-production-infra`.
+- Phase 4G resulting `main` SHA: `66690638884adb5098a9f7e559d8fffe57cc8c52`
+- Phase 4G PR: #21
+- PR CI run #112: success
+- Exact resulting-main CI run #113: success
+- Production provider: Railway project `Gridstone`, environment `production`
+- Public application URL: `https://gridstone-app-production.up.railway.app`
 
 ## Railway topology
 
-Project: `Gridstone`
-
-Production environment contains:
+Production contains two core services:
 
 1. `Postgres`
-   - Railway-managed PostgreSQL 18 image.
+   - Railway PostgreSQL 18 image.
    - Persistent volume mounted at `/var/lib/postgresql/data`.
-   - Daily and weekly volume backup schedules enabled.
-   - PITR intentionally not enabled in Phase 4G.
+   - Private database connectivity consumed by the app through provider-held configuration.
 
 2. `gridstone-app`
    - Built from the repository Dockerfile.
@@ -29,53 +28,55 @@ Production environment contains:
 
 ## Production application configuration
 
-Non-secret application settings:
+Non-secret application settings include:
 
 - `APP_ENV=production`
 - `APP_NAME=Gridstone API`
 - `APP_TIMEZONE=Asia/Kolkata`
 - `SESSION_LIFETIME_HOURS=8`
 - `PORT=8000`
-- `DATABASE_URL` is a Railway reference to the managed PostgreSQL service; credentials are not committed to Git.
+- `DATABASE_URL` references the managed PostgreSQL service; credentials are not committed to Git.
 
 Service controls:
 
-- Dockerfile build.
-- Pre-deploy command performs `alembic upgrade head` and production environment validation.
-- Health path: `/api/v1/health`.
-- Health timeout: 120 seconds.
-- Restart policy: restart on failure, maximum 10 retries.
-- One application replica in the current Railway region.
+- Dockerfile build;
+- pre-deploy `alembic upgrade head` + production environment validation;
+- health path `/api/v1/health`;
+- 120-second health timeout;
+- explicit restart-on-failure policy in the finalized Phase 4H service configuration;
+- one application replica in the current Railway region.
 
 ## Deployment verification
 
-The first two candidate deployments failed only at Railway's health-check stage. The application itself started and the migration/production-environment checks passed. Root cause was provider health-probe port configuration: the service used an explicit target port but did not yet have an explicit service-level `PORT` variable.
+The first two infrastructure candidates failed at Railway's health-check stage. The application itself started and migration/environment checks passed. Root cause was provider health-probe port configuration: the service used an explicit target port without a matching explicit service-level `PORT` value.
 
-The safe fix was to set `PORT=8000`, matching the Railway domain target and application listener. The third candidate deployment (`13fcde41-fbe5-45fe-9b4f-1234c2f4da32`) succeeded. Railway recorded:
+The safe fix was to set `PORT=8000`, matching the Railway domain target and listener. Candidate deployment `13fcde41-fbe5-45fe-9b4f-1234c2f4da32` then passed build, migration, PostgreSQL validation, startup and the provider health check with HTTP 200.
 
-- Docker build: success.
-- Alembic pre-deploy migration: success.
-- Production environment validator: PostgreSQL reachable.
-- Application startup: success.
-- Health check: succeeded on first attempt.
-- `GET /api/v1/health`: HTTP 200.
+The Dockerfile was updated to honor `${PORT:-8000}`, so the image remains provider-port-aware while retaining a local default.
 
-The Dockerfile is also updated on the Phase 4G branch to honor `${PORT:-8000}` so future providers do not depend on a Railway-only start-command override.
+## Database safety and corrected backup record
 
-## Database safety
+PostgreSQL data is stored on a persistent Railway volume. The repository contains portable `pg_dump`/`pg_restore` procedures and CI rehearses backup/restore against disposable PostgreSQL, including migration-count reconciliation and migration reversibility.
 
-- PostgreSQL data is on a persistent Railway volume.
-- Daily and weekly native volume backups are enabled.
-- The repository already contains portable `pg_dump` / restore rehearsal procedures and CI coverage for backup/restore behavior.
-- No destructive database operation or restore was performed during Phase 4G.
+### Provider-native backup entitlement
+
+A Phase 4H provider audit established that the current Railway Hobby workspace reports:
+
+`maxBackupsCount=0`
+
+Therefore **native Railway volume backup schedules are not available on the current plan**. Earlier Phase 4G notes that said daily and weekly native volume backups were enabled were incorrect and are superseded by this verified provider state.
+
+No production restore was performed merely to prove readiness. Enabling provider-native scheduled snapshots requires a Railway plan with backup entitlement or a separately approved external backup target.
 
 ## Initial administrator provisioning
 
-No production administrator account or password is committed or invented in Phase 4G. The secure supported path remains the repository CLI (`app.cli.create_user`) using a provider-held `GRIDSTONE_BOOTSTRAP_PASSWORD` for unattended provisioning, followed by removal/rotation of that bootstrap secret after first sign-in. Actual administrator provisioning belongs to the controlled Phase 4H release verification step.
+No password is committed to the repository. The supported unattended path uses the existing `app.cli.create_user` command with a temporary provider-held `GRIDSTONE_BOOTSTRAP_PASSWORD`, followed by removal of that variable after release verification.
 
-## Rollback target
+Phase 4H used this path for a dedicated release-verification administrator, completed the authenticated workflow, and then removed the bootstrap secret from the service configuration.
 
-Until Phase 4H creates a verified release, the infrastructure candidate above is the first healthy application deployment. Railway retains deployment images for plan-dependent rollback windows; repository rollback refs preserve the pre-4G Git baseline. No Phase 4G result should be called a fully verified production release until the PR is merged, exact-main CI passes, and Phase 4H smoke/persistence verification is complete.
+## Rollback
+
+Railway retains successful application deployments that are marked rollback-capable, while Git rollback refs preserve known-good repository states. Database downgrade safety must still be considered separately from application rollback whenever migrations change schema.
 
 ## Phase 4G exit checklist
 
@@ -86,13 +87,13 @@ Until Phase 4H creates a verified release, the infrastructure candidate above is
 - [x] Controlled Alembic pre-deploy migration configured and executed successfully.
 - [x] Production environment validator executed successfully.
 - [x] Health check configured and passing.
-- [x] Restart policy configured.
 - [x] Public HTTPS domain created.
 - [x] Secure initial-admin provisioning path documented without committing credentials.
-- [x] Daily and weekly database backup policy configured.
-- [x] Healthy provider candidate tied to the exact previously-green baseline SHA.
-- [ ] Phase 4G PR CI green on its exact head.
-- [ ] Merge to `main`.
-- [ ] Exact resulting `main` CI green.
+- [x] Rollback-capable healthy deployment retained.
+- [x] Portable PostgreSQL backup/restore procedure documented and rehearsed in CI.
+- [x] Phase 4G PR CI green on exact head.
+- [x] Phase 4G merged to `main`.
+- [x] Exact resulting `main` CI green.
+- [ ] Native Railway scheduled volume backups — unavailable on current Hobby entitlement (`maxBackupsCount=0`).
 
-After the final three repository gates pass, Phase 4G can be marked VERIFIED and Phase 4H can begin.
+Phase 4H subsequently completed production functional verification and persistence testing on the live infrastructure.
