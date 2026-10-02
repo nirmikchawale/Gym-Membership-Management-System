@@ -1,6 +1,6 @@
 # Gridstone
 
-Group 11 Software Engineering project. **Phases 3A — Repository Foundation & Project Initialization, 3B — Database Foundation, 3C — Authentication & Authorization, and 3D — Design System & Product Shell are complete and verified. The Members vertical product slice is now implemented and under the same verification gate. Plans, memberships/renewals, attendance, payments, dashboard and reporting remain later approved work.**
+Group 11 Software Engineering project. **Phases 3A — Repository Foundation & Project Initialization, 3B — Database Foundation, 3C — Authentication & Authorization, 3D — Design System & Product Shell, and the Members vertical product slice are complete and verified. The next vertical product slice is Membership Plans. Memberships/renewals, attendance, payments, dashboard and reporting remain later approved work.**
 
 Gridstone is the product name for the Gym Membership Management System.
 
@@ -16,7 +16,7 @@ Gridstone is the product name for the Gym Membership Management System.
 - Deployment shape: single-origin Dockerized application
 - Local development timezone: `Asia/Kolkata`
 
-Phase 3B established persistence for members, membership plans, memberships/renewal lineage, attendance, and payments. Phase 3C added internal staff/admin authentication and authorization with CSRF-protected, database-backed sessions. Phase 3D established the responsive Gridstone product shell, design tokens, navigation, real routes/deep links and accessible motion. The current Members slice adds the first real business workflow on that foundation.
+Phase 3B established persistence for members, membership plans, memberships/renewal lineage, attendance, and payments. Phase 3C added internal staff/admin authentication and authorization with CSRF-protected, database-backed sessions. Phase 3D established the responsive Gridstone product shell, design tokens, navigation, real routes/deep links and accessible motion. The verified Members slice adds the first real business workflow on that foundation.
 
 ## Current product scope
 
@@ -35,8 +35,8 @@ The authenticated Members workflow supports:
 Current routes:
 
 - `/` — workspace overview
-- `/members` — completed Members product slice
-- `/plans` — later approved slice
+- `/members` — verified Members product slice
+- `/plans` — next approved slice
 - `/memberships` — later approved slice
 - `/attendance` — later approved slice
 - `/payments` — later approved slice
@@ -56,7 +56,7 @@ Gridstone supports user-selectable **light** and **dark** appearance modes acros
 
 The responsive system keeps desktop and mobile first-class: member tables become touch-friendly cards on narrow screens, long names/contact details wrap safely, controls maintain touch-sized targets, and reduced-motion behavior remains supported.
 
-See [`docs/design-system.md`](docs/design-system.md) for the Phase 3D design contract and [`docs/members-theme-security-master-prompt.md`](docs/members-theme-security-master-prompt.md) for this Members/theme/security execution contract.
+See [`docs/design-system.md`](docs/design-system.md) for the Phase 3D design contract and [`docs/members-theme-security-master-prompt.md`](docs/members-theme-security-master-prompt.md) for the Members/theme/security execution contract.
 
 ## Prerequisites
 
@@ -140,6 +140,8 @@ Phase 3C implements internal `admin` and `staff` accounts only. There is no publ
 - Public preview mode must be explicitly enabled at build time; `*.vercel.app` no longer bypasses authentication automatically.
 - CI audits frontend and backend dependencies in addition to lint/type/test/build checks.
 
+The current dependency audit reports no known moderate-or-higher vulnerabilities in the frontend production dependency set and no known backend vulnerabilities. The full frontend development/tooling tree currently reports two moderate advisories and no high/critical findings; CI keeps high-severity full-tree findings blocking while separately enforcing the stricter production-dependency gate.
+
 No card number, CVV, bank credential, UPI PIN, or equivalent payment secret belongs in this system.
 
 See [`docs/authentication.md`](docs/authentication.md) for the Phase 3C security contract and provisioning workflow.
@@ -192,6 +194,7 @@ pnpm lint
 pnpm typecheck
 pnpm test:run
 pnpm build
+pnpm audit --prod --audit-level moderate
 pnpm audit --audit-level high
 ```
 
@@ -245,4 +248,4 @@ Use `main` plus short-lived branches such as `feat/*`, `fix/*`, `docs/*`, `test/
 
 ## Phase boundary
 
-**Phase 3D — Design System & Product Shell remains complete and verified. The Members vertical product slice is the only business slice implemented by this change.** Plans, memberships/renewals, attendance, payments, dashboard and reporting remain later work. The Vercel site is a public preview, not final production publication. Final production publication remains gated on the later approved product slices and final hardening.
+**Phase 3D — Design System & Product Shell and the Members vertical product slice are complete and verified. The next approved vertical slice is Membership Plans.** Memberships/renewals, attendance, payments, dashboard and reporting remain later work. The Vercel site is a public preview, not final production publication. Final production publication remains gated on the later approved product slices and final hardening.
