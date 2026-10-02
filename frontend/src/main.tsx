@@ -6,6 +6,7 @@ import './styles/global.css'
 import './styles/demo.css'
 import './styles/theme.css'
 import './styles/members.css'
+import './styles/plans.css'
 import './styles/theme-overrides.css'
 
 initializeTheme()

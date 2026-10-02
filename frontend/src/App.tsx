@@ -13,6 +13,7 @@ import { LoginPage } from './pages/LoginPage'
 import { MembersPage } from './pages/MembersPage'
 import { ModulePage } from './pages/ModulePage'
 import { NotFoundPage } from './pages/NotFoundPage'
+import { PlansPage } from './pages/PlansPage'
 
 type AuthState =
   | { kind: 'loading' }
@@ -121,7 +122,9 @@ function GridstoneApplication() {
     setAuth({ kind: 'anonymous' })
   }
 
-  const laterModules = moduleDefinitions.filter((module) => module.path !== '/members')
+  const laterModules = moduleDefinitions.filter(
+    (module) => module.path !== '/members' && module.path !== '/plans',
+  )
 
   return (
     <Routes>
@@ -138,6 +141,10 @@ function GridstoneApplication() {
         <Route index element={<HomePage user={auth.user} health={health} />} />
         <Route path="dashboard" element={<Navigate to="/" replace />} />
         <Route path="members" element={<MembersPage publicPreview={publicPreview} />} />
+        <Route
+          path="plans"
+          element={<PlansPage publicPreview={publicPreview} user={auth.user} />}
+        />
         {laterModules.map((module) => (
           <Route
             key={module.path}

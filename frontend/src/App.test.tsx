@@ -30,6 +30,19 @@ const memberRecord = {
   updated_at: '2026-09-01T00:00:00Z',
 }
 
+const planRecord = {
+  id: '00000000-0000-0000-0000-000000000211',
+  code: 'PRO-6M',
+  name: 'Forge Plus',
+  description: 'Six months of focused access.',
+  duration_days: 180,
+  price: '6999.00',
+  currency: 'INR',
+  is_active: true,
+  created_at: '2026-09-01T00:00:00Z',
+  updated_at: '2026-09-01T00:00:00Z',
+}
+
 function mockFetch(authenticated: boolean) {
   vi.stubGlobal(
     'fetch',
@@ -45,6 +58,11 @@ function mockFetch(authenticated: boolean) {
       if (url.includes('/api/v1/members')) {
         return Promise.resolve(
           jsonResponse({ items: [memberRecord], total: 1, limit: 20, offset: 0 }),
+        )
+      }
+      if (url.includes('/api/v1/plans')) {
+        return Promise.resolve(
+          jsonResponse({ items: [planRecord], total: 1, limit: 20, offset: 0 }),
         )
       }
       return Promise.resolve(
@@ -79,7 +97,7 @@ describe('App', () => {
     expect(await screen.findByText(/API \+ PostgreSQL online/i)).toBeVisible()
   })
 
-  it('shows the member-focused Gridstone workspace for an authenticated session', async () => {
+  it('shows the Gridstone workspace for an authenticated session', async () => {
     mockFetch(true)
     render(<App />)
 
@@ -88,6 +106,7 @@ describe('App', () => {
     ).toBeVisible()
     expect(screen.getAllByText(/Gridstone Admin/i)).toHaveLength(2)
     expect(screen.getByRole('link', { name: /^members$/i })).toBeVisible()
+    expect(screen.getByRole('link', { name: /^plans$/i })).toBeVisible()
     expect(screen.getByRole('button', { name: /sign out/i })).toBeVisible()
   })
 
@@ -100,6 +119,18 @@ describe('App', () => {
     expect(await screen.findByText(/Aarav Mehta/i)).toBeVisible()
     expect(screen.getByRole('button', { name: /add member/i })).toBeVisible()
     expect(screen.getByPlaceholderText(/search name, code, email, phone or plan/i)).toBeVisible()
+  })
+
+  it('supports the Membership Plans vertical slice for administrators', async () => {
+    window.history.replaceState({}, '', '/plans')
+    mockFetch(true)
+    render(<App />)
+
+    expect(await screen.findByRole('heading', { name: 'Membership Plans', level: 1 })).toBeVisible()
+    expect(await screen.findByText(/Forge Plus/i)).toBeVisible()
+    expect(screen.getByRole('button', { name: /create plan/i })).toBeVisible()
+    expect(screen.getByPlaceholderText(/search code, name or description/i)).toBeVisible()
+    expect(screen.getByText(/Historical pricing stays historical/i)).toBeVisible()
   })
 
   it('keeps later slices explicitly outside the current phase', async () => {
