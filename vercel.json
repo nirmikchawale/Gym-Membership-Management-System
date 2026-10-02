@@ -1,0 +1,16 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "framework": "vite",
+  "installCommand": "corepack enable && cd frontend && pnpm install --frozen-lockfile",
+  "buildCommand": "cd frontend && pnpm build",
+  "outputDirectory": "frontend/dist",
+  "rewrites": [
+    { "source": "/dashboard", "destination": "/index.html" },
+    { "source": "/members", "destination": "/index.html" },
+    { "source": "/plans", "destination": "/index.html" },
+    { "source": "/memberships", "destination": "/index.html" },
+    { "source": "/attendance", "destination": "/index.html" },
+    { "source": "/payments", "destination": "/index.html" },
+    { "source": "/reports", "destination": "/index.html" }
+  ]
+}
