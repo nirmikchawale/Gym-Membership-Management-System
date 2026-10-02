@@ -1,0 +1,48 @@
+name: Format Phase 4A Once
+
+on:
+  push:
+    branches: [feat/phase-4a-membership-lifecycle]
+
+permissions:
+  contents: write
+
+jobs:
+  format:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: feat/phase-4a-membership-lifecycle
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.18.3
+          run_install: false
+      - name: Install frontend dependencies
+        working-directory: frontend
+        run: pnpm install --frozen-lockfile
+      - name: Format frontend
+        working-directory: frontend
+        run: pnpm exec prettier --write src/App.tsx src/pages/MembershipsPage.tsx src/styles/memberships.css
+      - uses: astral-sh/setup-uv@v6
+        with:
+          version: 0.10.0
+          python-version: '3.14'
+      - name: Install backend dependencies
+        run: uv sync --project backend --frozen --group dev
+      - name: Format backend
+        run: uv run --project backend ruff format backend/app/api/routes/memberships.py backend/app/services/memberships.py backend/tests/test_memberships.py
+      - name: Commit formatting
+        run: |
+          if git diff --quiet; then
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add frontend/src/App.tsx frontend/src/pages/MembershipsPage.tsx frontend/src/styles/memberships.css backend/app/api/routes/memberships.py backend/app/services/memberships.py backend/tests/test_memberships.py
+          git commit -m "style: format Phase 4A membership slice"
+          git push origin HEAD:feat/phase-4a-membership-lifecycle
