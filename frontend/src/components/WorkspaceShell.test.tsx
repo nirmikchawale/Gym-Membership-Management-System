@@ -43,7 +43,7 @@ describe('WorkspaceShell mobile navigation', () => {
     fireEvent.click(menuButton)
 
     expect(menuButton).toHaveAttribute('aria-expanded', 'true')
-    expect(screen.getByRole('button', { name: /close navigation/i })).toHaveFocus()
+    expect(document.activeElement).toHaveClass('sidebar__close')
     expect(document.body.style.overflow).toBe('hidden')
 
     fireEvent.keyDown(window, { key: 'Escape' })
