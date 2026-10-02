@@ -20,7 +20,7 @@ uv run --project backend ruff format --check backend
 uv run --project backend mypy backend/app backend/tests
 (
   cd backend
-  uv run pytest
+  uv run python -m pytest
 )
 
 echo "==> Container stack"

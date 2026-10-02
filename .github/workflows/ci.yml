@@ -73,7 +73,7 @@ jobs:
         run: uv run --project backend mypy backend/app backend/tests
       - name: Tests
         working-directory: backend
-        run: uv run pytest
+        run: uv run python -m pytest
 
   container:
     runs-on: ubuntu-latest

@@ -97,7 +97,7 @@ Backend:
 uv run --project backend ruff check backend
 uv run --project backend ruff format --check backend
 uv run --project backend mypy backend/app backend/tests
-cd backend && uv run pytest
+cd backend && uv run python -m pytest
 ```
 
 Run the local foundation verification helper (after dependencies are installed and PostgreSQL is running):
