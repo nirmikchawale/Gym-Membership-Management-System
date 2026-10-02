@@ -141,7 +141,9 @@ describe('App', () => {
     mockFetch(true)
     render(<App />)
 
-    expect(await screen.findByRole('heading', { name: 'Attendance & Access', level: 1 })).toBeVisible()
+    expect(
+      await screen.findByRole('heading', { name: 'Attendance & Access', level: 1 }),
+    ).toBeVisible()
     expect(screen.getByText(/Find the member before opening the gate/i)).toBeVisible()
     expect(screen.getByPlaceholderText(/Member code, name, phone or email/i)).toBeVisible()
     expect(screen.getByText(/No attendance visits match these filters/i)).toBeVisible()
