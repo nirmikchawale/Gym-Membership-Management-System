@@ -1,0 +1,44 @@
+services:
+  db:
+    image: postgres:18-alpine
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-gym_membership}
+      POSTGRES_USER: ${POSTGRES_USER:-gym_app}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-gym_dev_password}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-gym_app} -d ${POSTGRES_DB:-gym_membership}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      APP_ENV: development
+      APP_TIMEZONE: Asia/Kolkata
+      DATABASE_URL: postgresql+psycopg://${POSTGRES_USER:-gym_app}:${POSTGRES_PASSWORD:-gym_dev_password}@db:5432/${POSTGRES_DB:-gym_membership}
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "8000:8000"
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "python",
+          "-c",
+          "import urllib.request; urllib.request.urlopen('http://localhost:8000/api/v1/health', timeout=3).read()",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  postgres_data:
