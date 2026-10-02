@@ -45,6 +45,37 @@ export type MemberListResponse = {
   offset: number
 }
 
+export type PlanRecord = {
+  id: string
+  code: string
+  name: string
+  description: string | null
+  duration_days: number
+  price: string
+  currency: string
+  is_active: boolean
+  created_at: string
+  updated_at: string
+}
+
+export type PlanInput = {
+  code: string
+  name: string
+  description?: string | null
+  duration_days: number
+  price: string
+  currency?: string
+}
+
+export type PlanUpdateInput = Partial<PlanInput>
+
+export type PlanListResponse = {
+  items: PlanRecord[]
+  total: number
+  limit: number
+  offset: number
+}
+
 type LoginResponse = {
   user: AuthUser
 }
@@ -216,4 +247,73 @@ export async function setMemberActive(memberId: string, isActive: boolean): Prom
     throw new Error(await errorMessage(response, `Unable to ${action} member`))
   }
   return (await response.json()) as MemberRecord
+}
+
+export async function listPlans({
+  query,
+  status = 'all',
+  limit = 20,
+  offset = 0,
+  signal,
+}: {
+  query?: string
+  status?: 'all' | 'active' | 'inactive'
+  limit?: number
+  offset?: number
+  signal?: AbortSignal
+} = {}): Promise<PlanListResponse> {
+  const params = new URLSearchParams({ status, limit: String(limit), offset: String(offset) })
+  if (query?.trim()) params.set('query', query.trim())
+
+  const response = await fetch(`/api/v1/plans?${params.toString()}`, {
+    method: 'GET',
+    headers: { Accept: 'application/json' },
+    credentials: 'same-origin',
+    signal,
+  })
+  if (!response.ok) throw new Error(await errorMessage(response, 'Unable to load membership plans'))
+  return (await response.json()) as PlanListResponse
+}
+
+export async function createPlan(payload: PlanInput): Promise<PlanRecord> {
+  const response = await fetch('/api/v1/plans', {
+    method: 'POST',
+    headers: {
+      Accept: 'application/json',
+      'Content-Type': 'application/json',
+      ...csrfHeaders(),
+    },
+    credentials: 'same-origin',
+    body: JSON.stringify(payload),
+  })
+  if (!response.ok) throw new Error(await errorMessage(response, 'Unable to create membership plan'))
+  return (await response.json()) as PlanRecord
+}
+
+export async function updatePlan(planId: string, payload: PlanUpdateInput): Promise<PlanRecord> {
+  const response = await fetch(`/api/v1/plans/${planId}`, {
+    method: 'PATCH',
+    headers: {
+      Accept: 'application/json',
+      'Content-Type': 'application/json',
+      ...csrfHeaders(),
+    },
+    credentials: 'same-origin',
+    body: JSON.stringify(payload),
+  })
+  if (!response.ok) throw new Error(await errorMessage(response, 'Unable to update membership plan'))
+  return (await response.json()) as PlanRecord
+}
+
+export async function setPlanActive(planId: string, isActive: boolean): Promise<PlanRecord> {
+  const action = isActive ? 'activate' : 'deactivate'
+  const response = await fetch(`/api/v1/plans/${planId}/${action}`, {
+    method: 'POST',
+    headers: { Accept: 'application/json', ...csrfHeaders() },
+    credentials: 'same-origin',
+  })
+  if (!response.ok) {
+    throw new Error(await errorMessage(response, `Unable to ${action} membership plan`))
+  }
+  return (await response.json()) as PlanRecord
 }
