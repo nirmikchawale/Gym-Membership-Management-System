@@ -121,17 +121,13 @@ def test_access_check_in_duplicate_and_checkout_flow() -> None:
     assert duplicate.status_code == 409
 
     assert client.post(f"/api/v1/attendance/{visit['id']}/checkout").status_code == 403
-    checked_out = client.post(
-        f"/api/v1/attendance/{visit['id']}/checkout", headers=_csrf(client)
-    )
+    checked_out = client.post(f"/api/v1/attendance/{visit['id']}/checkout", headers=_csrf(client))
     assert checked_out.status_code == 200
     assert checked_out.json()["is_open"] is False
     assert checked_out.json()["checked_out_at"] is not None
     assert checked_out.json()["duration_minutes"] is not None
 
-    repeated = client.post(
-        f"/api/v1/attendance/{visit['id']}/checkout", headers=_csrf(client)
-    )
+    repeated = client.post(f"/api/v1/attendance/{visit['id']}/checkout", headers=_csrf(client))
     assert repeated.status_code == 409
 
 
@@ -144,9 +140,7 @@ def test_attendance_denies_inactive_and_non_active_memberships() -> None:
     assert response.json()["eligible"] is False
     assert "inactive" in response.json()["reason"]
 
-    frozen_member, _plan_id, _membership_id = _member_with_membership(
-        membership_status="frozen"
-    )
+    frozen_member, _plan_id, _membership_id = _member_with_membership(membership_status="frozen")
     response = client.get(f"/api/v1/attendance/access/{frozen_member}")
     assert response.status_code == 200
     assert response.json()["eligible"] is False
@@ -188,9 +182,12 @@ def test_attendance_history_search_state_dates_and_bounds() -> None:
     assert open_rows.status_code == 200
     assert open_rows.json()["total"] == 1
 
-    assert client.post(
-        f"/api/v1/attendance/{created.json()['id']}/checkout", headers=headers
-    ).status_code == 200
+    assert (
+        client.post(
+            f"/api/v1/attendance/{created.json()['id']}/checkout", headers=headers
+        ).status_code
+        == 200
+    )
     closed_rows = client.get("/api/v1/attendance", params={"query": code, "state": "closed"})
     assert closed_rows.status_code == 200
     assert closed_rows.json()["total"] == 1

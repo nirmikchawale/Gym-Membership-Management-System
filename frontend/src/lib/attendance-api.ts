@@ -77,7 +77,8 @@ export async function getAttendanceAccess(
     credentials: 'same-origin',
     signal,
   })
-  if (!response.ok) throw new Error(await errorMessage(response, 'Unable to validate member access'))
+  if (!response.ok)
+    throw new Error(await errorMessage(response, 'Unable to validate member access'))
   return (await response.json()) as AttendanceAccess
 }
 
