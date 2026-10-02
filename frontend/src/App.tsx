@@ -8,6 +8,7 @@ import { useScrollTide } from './lib/useScrollTide'
 import { Brand } from './components/Brand'
 import { Button } from './components/ui'
 import { WorkspaceShell } from './components/WorkspaceShell'
+import { AttendancePage } from './pages/AttendancePage'
 import { HomePage } from './pages/HomePage'
 import { LoginPage } from './pages/LoginPage'
 import { MembersPage } from './pages/MembersPage'
@@ -118,7 +119,7 @@ function GridstoneApplication() {
   }
 
   const laterModules = moduleDefinitions.filter(
-    (module) => !['/members', '/plans', '/memberships'].includes(module.path),
+    (module) => !['/members', '/plans', '/memberships', '/attendance'].includes(module.path),
   )
 
   return (
@@ -141,6 +142,7 @@ function GridstoneApplication() {
           element={<PlansPage publicPreview={publicPreview} user={auth.user} />}
         />
         <Route path="memberships" element={<MembershipsPage publicPreview={publicPreview} />} />
+        <Route path="attendance" element={<AttendancePage publicPreview={publicPreview} />} />
         {laterModules.map((module) => (
           <Route
             key={module.path}

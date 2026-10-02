@@ -15,6 +15,7 @@ class Attendance(UUIDPrimaryKeyMixin, TimestampMixin, Base):
             name="checkout_after_checkin",
         ),
         Index("ix_attendance_member_checked_in", "member_id", "checked_in_at"),
+        Index("ix_attendance_membership_checked_in", "membership_id", "checked_in_at"),
         Index(
             "uq_attendance_one_open_visit_per_member",
             "member_id",
@@ -25,6 +26,9 @@ class Attendance(UUIDPrimaryKeyMixin, TimestampMixin, Base):
 
     member_id: Mapped[UUID] = mapped_column(
         ForeignKey("members.id", ondelete="RESTRICT"), nullable=False
+    )
+    membership_id: Mapped[UUID | None] = mapped_column(
+        ForeignKey("memberships.id", ondelete="RESTRICT"), nullable=True
     )
     checked_in_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), nullable=False, server_default=text("now()")
