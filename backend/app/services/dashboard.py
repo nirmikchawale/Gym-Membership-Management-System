@@ -1,6 +1,6 @@
 from datetime import UTC, date, datetime, time, timedelta
 
-from sqlalchemy import func, select
+from sqlalchemy import and_, func, select
 from sqlalchemy.orm import Session
 
 from app.core.config import settings
@@ -20,6 +20,7 @@ from app.schemas.dashboard import (
 from app.services.memberships import business_date, synchronize_membership_statuses
 
 MEMBERSHIP_STATUSES = ("scheduled", "active", "frozen", "expired", "cancelled")
+LIVE_MEMBERSHIP_STATUSES = ("scheduled", "active", "frozen")
 
 
 def _local_day_start(day: date) -> datetime:
@@ -30,7 +31,12 @@ def _count(db: Session, statement: object) -> int:
     return int(db.scalar(statement) or 0)  # type: ignore[arg-type]
 
 
-def get_dashboard_overview(db: Session) -> DashboardOverview:
+def get_dashboard_overview(
+    db: Session,
+    *,
+    trend_days: int = 7,
+    expiring_within_days: int = 30,
+) -> DashboardOverview:
     synchronize_membership_statuses(db)
     today = business_date()
 
@@ -57,7 +63,7 @@ def get_dashboard_overview(db: Session) -> DashboardOverview:
 
     today_start = _local_day_start(today)
     tomorrow_start = _local_day_start(today + timedelta(days=1))
-    week_start = _local_day_start(today - timedelta(days=6))
+    trend_start = _local_day_start(today - timedelta(days=trend_days - 1))
     open_visits = _count(
         db,
         select(func.count()).select_from(Attendance).where(Attendance.checked_out_at.is_(None)),
@@ -68,15 +74,15 @@ def get_dashboard_overview(db: Session) -> DashboardOverview:
         .select_from(Attendance)
         .where(Attendance.checked_in_at >= today_start, Attendance.checked_in_at < tomorrow_start),
     )
-    last_7_days_checkins = _count(
+    period_checkins = _count(
         db,
         select(func.count())
         .select_from(Attendance)
-        .where(Attendance.checked_in_at >= week_start, Attendance.checked_in_at < tomorrow_start),
+        .where(Attendance.checked_in_at >= trend_start, Attendance.checked_in_at < tomorrow_start),
     )
 
     attendance_trend: list[DashboardAttendanceDay] = []
-    for days_ago in range(6, -1, -1):
+    for days_ago in range(trend_days - 1, -1, -1):
         day = today - timedelta(days=days_ago)
         start = _local_day_start(day)
         end = _local_day_start(day + timedelta(days=1))
@@ -99,7 +105,7 @@ def get_dashboard_overview(db: Session) -> DashboardOverview:
         .where(
             Membership.status.in_(("active", "frozen")),
             Membership.end_date >= today,
-            Membership.end_date <= today + timedelta(days=30),
+            Membership.end_date <= today + timedelta(days=expiring_within_days),
         )
         .order_by(Membership.end_date.asc(), Member.member_code.asc())
         .limit(12)
@@ -125,7 +131,13 @@ def get_dashboard_overview(db: Session) -> DashboardOverview:
             MembershipPlan.name,
             func.count(Membership.id).label("memberships"),
         )
-        .outerjoin(Membership, Membership.plan_id == MembershipPlan.id)
+        .outerjoin(
+            Membership,
+            and_(
+                Membership.plan_id == MembershipPlan.id,
+                Membership.status.in_(LIVE_MEMBERSHIP_STATUSES),
+            ),
+        )
         .group_by(MembershipPlan.id, MembershipPlan.code, MembershipPlan.name)
         .having(func.count(Membership.id) > 0)
         .order_by(func.count(Membership.id).desc(), MembershipPlan.code.asc())
@@ -143,6 +155,8 @@ def get_dashboard_overview(db: Session) -> DashboardOverview:
 
     return DashboardOverview(
         as_of=today,
+        trend_days=trend_days,
+        expiring_within_days=expiring_within_days,
         members=DashboardMemberCounts(
             total=member_total,
             active=member_active,
@@ -160,7 +174,7 @@ def get_dashboard_overview(db: Session) -> DashboardOverview:
         attendance=DashboardAttendanceCounts(
             open_visits=open_visits,
             today_checkins=today_checkins,
-            last_7_days_checkins=last_7_days_checkins,
+            period_checkins=period_checkins,
         ),
         expiring_soon=expiring_soon,
         attendance_trend=attendance_trend,
