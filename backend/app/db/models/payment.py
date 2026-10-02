@@ -28,9 +28,7 @@ class Payment(UUIDPrimaryKeyMixin, TimestampMixin, Base):
     membership_id: Mapped[UUID] = mapped_column(
         ForeignKey("memberships.id", ondelete="RESTRICT"), nullable=False
     )
-    external_reference: Mapped[str | None] = mapped_column(
-        String(100), nullable=True, unique=True
-    )
+    external_reference: Mapped[str | None] = mapped_column(String(100), nullable=True, unique=True)
     amount: Mapped[Decimal] = mapped_column(Numeric(12, 2), nullable=False)
     currency: Mapped[str] = mapped_column(
         String(3), nullable=False, default="INR", server_default=text("'INR'")
