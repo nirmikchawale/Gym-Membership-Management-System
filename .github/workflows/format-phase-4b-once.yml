@@ -1,0 +1,48 @@
+name: Format Phase 4B Once
+
+on:
+  push:
+    branches: [feat/phase-4b-attendance]
+
+permissions:
+  contents: write
+
+jobs:
+  format:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: feat/phase-4b-attendance
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.18.3
+          run_install: false
+      - name: Install frontend dependencies
+        working-directory: frontend
+        run: pnpm install --frozen-lockfile
+      - name: Format frontend
+        working-directory: frontend
+        run: pnpm exec prettier --write src/App.tsx src/main.tsx src/lib/attendance-api.ts src/pages/AttendancePage.tsx src/styles/attendance.css
+      - uses: astral-sh/setup-uv@v6
+        with:
+          version: '0.10.0'
+          python-version: '3.14'
+      - name: Install backend dependencies
+        run: uv sync --project backend --frozen --group dev
+      - name: Format backend
+        run: uv run --project backend ruff format backend/app/api/router.py backend/app/api/routes/attendance.py backend/app/db/models/attendance.py backend/app/schemas/attendance.py backend/app/services/attendance.py backend/alembic/versions/20261002_0003_attendance_membership_link.py backend/tests/test_attendance.py
+      - name: Commit formatting
+        run: |
+          if git diff --quiet; then
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add frontend/src/App.tsx frontend/src/main.tsx frontend/src/lib/attendance-api.ts frontend/src/pages/AttendancePage.tsx frontend/src/styles/attendance.css backend/app/api/router.py backend/app/api/routes/attendance.py backend/app/db/models/attendance.py backend/app/schemas/attendance.py backend/app/services/attendance.py backend/alembic/versions/20261002_0003_attendance_membership_link.py backend/tests/test_attendance.py
+          git commit -m "style: format Phase 4B attendance slice"
+          git push origin HEAD:feat/phase-4b-attendance
