@@ -1,3 +1,11 @@
+import {
+  demoAttendanceAccess,
+  demoCheckIn,
+  demoCheckOut,
+  demoListAttendance,
+  isInteractiveDemoRuntime,
+} from './demo-runtime'
+
 export type AttendanceRecord = {
   id: string
   member_id: string
@@ -71,6 +79,8 @@ export async function getAttendanceAccess(
   memberId: string,
   signal?: AbortSignal,
 ): Promise<AttendanceAccess> {
+  if (isInteractiveDemoRuntime()) return demoAttendanceAccess(memberId)
+
   const response = await fetch(`/api/v1/attendance/access/${memberId}`, {
     method: 'GET',
     headers: { Accept: 'application/json' },
@@ -99,6 +109,10 @@ export async function listAttendance({
   offset?: number
   signal?: AbortSignal
 } = {}): Promise<AttendanceListResponse> {
+  if (isInteractiveDemoRuntime()) {
+    return demoListAttendance({ query, state, from, to, limit, offset })
+  }
+
   const params = new URLSearchParams({ state, limit: String(limit), offset: String(offset) })
   if (query?.trim()) params.set('query', query.trim())
   if (from) params.set('from', from)
@@ -114,6 +128,8 @@ export async function listAttendance({
 }
 
 export async function checkIn(memberId: string, notes?: string | null): Promise<AttendanceRecord> {
+  if (isInteractiveDemoRuntime()) return demoCheckIn(memberId, notes)
+
   const response = await fetch('/api/v1/attendance', {
     method: 'POST',
     headers: {
@@ -129,6 +145,8 @@ export async function checkIn(memberId: string, notes?: string | null): Promise<
 }
 
 export async function checkOut(attendanceId: string): Promise<AttendanceRecord> {
+  if (isInteractiveDemoRuntime()) return demoCheckOut(attendanceId)
+
   const response = await fetch(`/api/v1/attendance/${attendanceId}/checkout`, {
     method: 'POST',
     headers: { Accept: 'application/json', ...csrfHeaders() },
