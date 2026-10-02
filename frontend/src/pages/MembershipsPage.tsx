@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, type FormEvent } from 'react'
+import { useEffect, useState, type FormEvent } from 'react'
 import {
   CalendarClock,
   ChevronLeft,
@@ -11,7 +11,7 @@ import {
   X,
 } from 'lucide-react'
 import { Badge, Button } from '../components/ui'
-import { demoMemberships, formatDate, formatINR } from '../lib/demo-data'
+import { formatDate, formatINR } from '../lib/demo-data'
 import { listMembers, listPlans, type MemberRecord, type PlanRecord } from '../lib/api'
 import {
   createMembership,
@@ -25,7 +25,6 @@ import {
 const PAGE_SIZE = 20
 
 type StatusFilter = MembershipStatus | 'all'
-
 type MembershipDialogMode = 'create' | 'renew'
 
 function statusTone(status: MembershipStatus) {
@@ -38,11 +37,13 @@ function statusTone(status: MembershipStatus) {
 function MembershipFormDialog({
   mode,
   source,
+  publicPreview,
   onClose,
   onSaved,
 }: {
   mode: MembershipDialogMode
   source: MembershipRecord | null
+  publicPreview: boolean
   onClose: () => void
   onSaved: (record: MembershipRecord) => void
 }) {
@@ -55,7 +56,7 @@ function MembershipFormDialog({
   useEffect(() => {
     let active = true
     Promise.all([
-      listMembers({ status: 'active', limit: 100 }),
+      listMembers({ status: 'active', limit: 200 }),
       listPlans({ status: 'active', limit: 100 }),
     ])
       .then(([memberResponse, planResponse]) => {
@@ -64,8 +65,9 @@ function MembershipFormDialog({
         setPlans(planResponse.items)
       })
       .catch((loadError: unknown) => {
-        if (active)
+        if (active) {
           setError(loadError instanceof Error ? loadError.message : 'Unable to load options')
+        }
       })
       .finally(() => {
         if (active) setLoadingOptions(false)
@@ -89,6 +91,7 @@ function MembershipFormDialog({
     setError(null)
     const data = new FormData(event.currentTarget)
     const value = (name: string) => String(data.get(name) ?? '').trim()
+
     try {
       const saved =
         mode === 'create'
@@ -121,7 +124,7 @@ function MembershipFormDialog({
         <div className="member-form-dialog__header">
           <div>
             <p className="card-eyebrow">
-              {mode === 'create' ? 'Membership assignment' : 'Renewal'}
+              {publicPreview ? 'Demo sandbox' : mode === 'create' ? 'Membership assignment' : 'Renewal'}
             </p>
             <h2 id="membership-form-title">
               {mode === 'create'
@@ -138,6 +141,7 @@ function MembershipFormDialog({
             <X size={18} aria-hidden="true" />
           </button>
         </div>
+
         <form className="member-form" onSubmit={submit}>
           {mode === 'create' && (
             <label className="field">
@@ -154,6 +158,7 @@ function MembershipFormDialog({
               </select>
             </label>
           )}
+
           <label className="field">
             <span className="field__label">Plan</span>
             <select
@@ -175,23 +180,33 @@ function MembershipFormDialog({
               ))}
             </select>
           </label>
+
           <label className="field">
             <span className="field__label">
               Start date <small>(optional)</small>
             </span>
             <input name="start_date" type="date" />
           </label>
+
           <label className="field">
             <span className="field__label">
               Notes <small>(optional)</small>
             </span>
             <textarea name="notes" rows={3} maxLength={2000} />
           </label>
+
           {error && (
             <p className="form-error" role="alert">
               {error}
             </p>
           )}
+
+          {publicPreview && (
+            <p className="membership-detail__note">
+              Assignment and renewal changes remain inside the synthetic demo sandbox.
+            </p>
+          )}
+
           <div className="member-form__actions">
             <Button type="button" variant="secondary" onClick={onClose} disabled={submitting}>
               Cancel
@@ -213,7 +228,7 @@ export function MembershipsPage({ publicPreview }: { publicPreview: boolean }) {
   const [page, setPage] = useState(1)
   const [records, setRecords] = useState<MembershipRecord[]>([])
   const [total, setTotal] = useState(0)
-  const [loading, setLoading] = useState(!publicPreview)
+  const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const [dialog, setDialog] = useState<MembershipDialogMode | null>(null)
@@ -224,50 +239,10 @@ export function MembershipsPage({ publicPreview }: { publicPreview: boolean }) {
     const timer = window.setTimeout(() => setDebouncedQuery(query.trim()), 250)
     return () => window.clearTimeout(timer)
   }, [query])
+
   useEffect(() => setPage(1), [debouncedQuery, status])
 
-  const previewRecords = useMemo<MembershipRecord[]>(() => {
-    if (!publicPreview) return []
-    return demoMemberships.map((item, index) => ({
-      id: `demo:${item.id}`,
-      member_id: `demo-member:${item.memberCode}`,
-      member_code: item.memberCode,
-      member_name: item.memberName,
-      plan_id: `demo-plan:${item.planCode}`,
-      plan_code: item.planCode,
-      plan_name: item.planName,
-      renewed_from_membership_id: null,
-      start_date: item.startsOn,
-      end_date: item.endsOn,
-      status:
-        item.status === 'Expiring' ? 'active' : (item.status.toLowerCase() as MembershipStatus),
-      price_amount: item.value.toFixed(2),
-      currency: 'INR',
-      notes: index === 0 ? 'Synthetic preview membership' : null,
-      created_at: `${item.startsOn}T00:00:00Z`,
-      updated_at: `${item.startsOn}T00:00:00Z`,
-    }))
-  }, [publicPreview])
-
   useEffect(() => {
-    if (publicPreview) {
-      const normalized = debouncedQuery.toLowerCase()
-      const filtered = previewRecords.filter((item) => {
-        const statusMatch = status === 'all' || item.status === status
-        const queryMatch =
-          !normalized ||
-          [item.member_code, item.member_name, item.plan_code, item.plan_name]
-            .join(' ')
-            .toLowerCase()
-            .includes(normalized)
-        return statusMatch && queryMatch
-      })
-      const offset = (page - 1) * PAGE_SIZE
-      setRecords(filtered.slice(offset, offset + PAGE_SIZE))
-      setTotal(filtered.length)
-      setLoading(false)
-      return
-    }
     const controller = new AbortController()
     setLoading(true)
     setError(null)
@@ -283,16 +258,21 @@ export function MembershipsPage({ publicPreview }: { publicPreview: boolean }) {
         setTotal(response.total)
       })
       .catch((loadError: unknown) => {
-        if (!controller.signal.aborted)
+        if (!controller.signal.aborted) {
           setError(loadError instanceof Error ? loadError.message : 'Unable to load memberships')
+        }
       })
       .finally(() => {
         if (!controller.signal.aborted) setLoading(false)
       })
     return () => controller.abort()
-  }, [debouncedQuery, page, previewRecords, publicPreview, refreshKey, status])
+  }, [debouncedQuery, page, refreshKey, status])
 
   const pageCount = Math.max(1, Math.ceil(total / PAGE_SIZE))
+  useEffect(() => {
+    if (page > pageCount) setPage(pageCount)
+  }, [page, pageCount])
+
   const selected = records.find((item) => item.id === selectedId) ?? null
 
   function saved(record: MembershipRecord) {
@@ -302,11 +282,12 @@ export function MembershipsPage({ publicPreview }: { publicPreview: boolean }) {
   }
 
   async function transition(action: 'cancel' | 'freeze' | 'resume') {
-    if (!selected || publicPreview) return
+    if (!selected) return
     setBusy(true)
     setError(null)
     try {
-      await transitionMembership(selected.id, action)
+      const savedRecord = await transitionMembership(selected.id, action)
+      setSelectedId(savedRecord.id)
       setRefreshKey((value) => value + 1)
     } catch (transitionError: unknown) {
       setError(
@@ -328,17 +309,13 @@ export function MembershipsPage({ publicPreview }: { publicPreview: boolean }) {
             traceable renewals.
           </p>
         </div>
-        {publicPreview ? (
-          <Badge tone="accent">Read-only membership preview</Badge>
-        ) : (
-          <Button
-            type="button"
-            icon={<Plus size={16} aria-hidden="true" />}
-            onClick={() => setDialog('create')}
-          >
-            Assign membership
-          </Button>
-        )}
+        <Button
+          type="button"
+          icon={<Plus size={16} aria-hidden="true" />}
+          onClick={() => setDialog('create')}
+        >
+          {publicPreview ? 'Assign demo membership' : 'Assign membership'}
+        </Button>
       </header>
 
       <section className="membership-metrics" aria-label="Membership summary">
@@ -359,6 +336,20 @@ export function MembershipsPage({ publicPreview }: { publicPreview: boolean }) {
         </article>
       </section>
 
+      {publicPreview && (
+        <aside className="demo-notice" aria-label="Membership demo notice">
+          <RefreshCcw size={18} aria-hidden="true" />
+          <div>
+            <strong>Complete synthetic lifecycle sandbox</strong>
+            <p>
+              Active, scheduled, frozen, expired and cancelled examples share the same member and
+              plan records. Assign, renew, freeze, resume and cancel to see the lifecycle update.
+            </p>
+          </div>
+          <Badge tone="success">Interactive</Badge>
+        </aside>
+      )}
+
       <section className="membership-workspace">
         <article className="data-card membership-directory">
           <div className="data-card__header">
@@ -368,6 +359,7 @@ export function MembershipsPage({ publicPreview }: { publicPreview: boolean }) {
             </div>
             <Badge tone="neutral">{loading ? 'Loading…' : `${total} results`}</Badge>
           </div>
+
           <div className="data-toolbar membership-toolbar">
             <label className="search-field">
               <Search size={17} aria-hidden="true" />
@@ -394,11 +386,13 @@ export function MembershipsPage({ publicPreview }: { publicPreview: boolean }) {
               </select>
             </label>
           </div>
+
           {error && (
             <div className="workspace-alert" role="alert">
               {error}
             </div>
           )}
+
           <div className="data-table-wrap membership-table-wrap" aria-live="polite">
             <table className="data-table membership-table">
               <thead>
@@ -461,12 +455,14 @@ export function MembershipsPage({ publicPreview }: { publicPreview: boolean }) {
                   ))}
               </tbody>
             </table>
+
             {!loading && records.length === 0 && (
               <div className="data-empty" role="status">
                 No memberships match those filters.
               </div>
             )}
           </div>
+
           <nav className="preview-pagination" aria-label="Membership result pages">
             <Button
               type="button"
@@ -527,54 +523,49 @@ export function MembershipsPage({ publicPreview }: { publicPreview: boolean }) {
                 </div>
               </dl>
               {selected.notes && <p className="membership-detail__notes">{selected.notes}</p>}
-              {publicPreview ? (
-                <p className="membership-detail__note">
-                  State-changing controls are disabled in the public preview.
-                </p>
-              ) : (
-                <div className="membership-detail__actions">
-                  {!['cancelled', 'scheduled'].includes(selected.status) && (
-                    <Button
-                      type="button"
-                      variant="secondary"
-                      onClick={() => setDialog('renew')}
-                      disabled={busy}
-                    >
-                      <RefreshCcw size={16} aria-hidden="true" /> Renew
-                    </Button>
-                  )}
-                  {selected.status === 'active' && (
-                    <Button
-                      type="button"
-                      variant="secondary"
-                      onClick={() => void transition('freeze')}
-                      disabled={busy}
-                    >
-                      <Snowflake size={16} aria-hidden="true" /> Freeze
-                    </Button>
-                  )}
-                  {selected.status === 'frozen' && (
-                    <Button
-                      type="button"
-                      variant="secondary"
-                      onClick={() => void transition('resume')}
-                      disabled={busy}
-                    >
-                      <RefreshCcw size={16} aria-hidden="true" /> Resume
-                    </Button>
-                  )}
-                  {!['cancelled', 'expired'].includes(selected.status) && (
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      onClick={() => void transition('cancel')}
-                      disabled={busy}
-                    >
-                      <CirclePause size={16} aria-hidden="true" /> Cancel
-                    </Button>
-                  )}
-                </div>
-              )}
+
+              <div className="membership-detail__actions">
+                {!['cancelled', 'scheduled'].includes(selected.status) && (
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    onClick={() => setDialog('renew')}
+                    disabled={busy}
+                  >
+                    <RefreshCcw size={16} aria-hidden="true" /> Renew
+                  </Button>
+                )}
+                {selected.status === 'active' && (
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    onClick={() => void transition('freeze')}
+                    disabled={busy}
+                  >
+                    <Snowflake size={16} aria-hidden="true" /> Freeze
+                  </Button>
+                )}
+                {selected.status === 'frozen' && (
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    onClick={() => void transition('resume')}
+                    disabled={busy}
+                  >
+                    <RefreshCcw size={16} aria-hidden="true" /> Resume
+                  </Button>
+                )}
+                {!['cancelled', 'expired'].includes(selected.status) && (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    onClick={() => void transition('cancel')}
+                    disabled={busy}
+                  >
+                    <CirclePause size={16} aria-hidden="true" /> Cancel
+                  </Button>
+                )}
+              </div>
             </>
           ) : (
             <div className="data-empty">Select a membership to inspect its lifecycle.</div>
@@ -582,10 +573,11 @@ export function MembershipsPage({ publicPreview }: { publicPreview: boolean }) {
         </aside>
       </section>
 
-      {dialog && !publicPreview && (
+      {dialog && (
         <MembershipFormDialog
           mode={dialog}
           source={selected}
+          publicPreview={publicPreview}
           onClose={() => setDialog(null)}
           onSaved={saved}
         />
