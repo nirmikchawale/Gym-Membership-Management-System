@@ -1,0 +1,41 @@
+name: Temporary format fix
+
+on:
+  push:
+    branches: [feat/phase-3a-foundation]
+
+permissions:
+  contents: write
+
+jobs:
+  format:
+    if: "${{ !contains(github.event.head_commit.message, 'style: apply prettier formatting') }}"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.18.3
+          run_install: false
+      - name: Install dependencies
+        working-directory: frontend
+        run: pnpm install --frozen-lockfile
+      - name: Apply Prettier
+        working-directory: frontend
+        run: pnpm format
+      - name: Commit formatting
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add frontend
+          if git diff --cached --quiet; then
+            echo "No formatting changes needed."
+            exit 0
+          fi
+          git commit -m "style: apply prettier formatting"
+          git push
