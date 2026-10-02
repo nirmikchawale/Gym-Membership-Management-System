@@ -82,7 +82,12 @@ export const moduleDefinitions: ModuleDefinition[] = [
     title: 'Reports',
     description:
       'Operational membership and attendance signals derived from the same persisted records used at the front desk.',
-    capabilities: ['Membership lifecycle', 'Expiry queue', 'Attendance patterns', 'Plan distribution'],
+    capabilities: [
+      'Membership lifecycle',
+      'Expiry queue',
+      'Attendance patterns',
+      'Plan distribution',
+    ],
   },
 ]
 

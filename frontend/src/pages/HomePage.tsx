@@ -89,7 +89,11 @@ export function HomePage({
           <p className="card-eyebrow">Dashboard unavailable</p>
           <h2>Operational data could not be loaded.</h2>
           <p className="data-empty">{error}</p>
-          <Button type="button" variant="secondary" onClick={() => setRetryKey((value) => value + 1)}>
+          <Button
+            type="button"
+            variant="secondary"
+            onClick={() => setRetryKey((value) => value + 1)}
+          >
             Try again
           </Button>
         </article>
