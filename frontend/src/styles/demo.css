@@ -18,8 +18,7 @@
   border: 1px solid rgb(127 156 255 / 20%);
   border-radius: var(--radius-lg);
   background:
-    linear-gradient(135deg, rgb(127 156 255 / 7%), rgb(165 140 255 / 3%)),
-    rgb(255 255 255 / 1.8%);
+    linear-gradient(135deg, rgb(127 156 255 / 7%), rgb(165 140 255 / 3%)), rgb(255 255 255 / 1.8%);
   color: var(--accent-strong);
   padding: 0.9rem 1rem;
 }
