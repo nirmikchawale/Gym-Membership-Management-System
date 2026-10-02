@@ -64,7 +64,7 @@ describe('App', () => {
     expect(
       await screen.findByRole('heading', { name: /the front desk, without the friction/i }),
     ).toBeVisible()
-    expect(screen.getByText(/Gridstone Admin/i)).toBeVisible()
+    expect(screen.getAllByText(/Gridstone Admin/i)).toHaveLength(2)
     expect(screen.getByRole('link', { name: /members/i })).toBeVisible()
     expect(screen.getByRole('button', { name: /sign out/i })).toBeVisible()
   })
