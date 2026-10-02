@@ -32,6 +32,6 @@ def health(db: Annotated[Session, Depends(get_db)]) -> HealthResponse:
     return HealthResponse(
         status="ok",
         database="ok",
-        service="gym-membership-api",
+        service="gridstone-api",
         version=settings.app_version,
     )
