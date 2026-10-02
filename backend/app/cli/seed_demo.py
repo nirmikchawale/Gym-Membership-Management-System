@@ -78,7 +78,9 @@ def _membership_window(index: int, duration_days: int) -> tuple[date, date, str]
     return start, start + timedelta(days=duration_days - 1), status
 
 
-def seed_demo(db: Session, *, member_count: int = DEMO_MEMBER_COUNT, environment: str) -> dict[str, int]:
+def seed_demo(
+    db: Session, *, member_count: int = DEMO_MEMBER_COUNT, environment: str
+) -> dict[str, int]:
     _require_safe_environment(environment)
     created = {"plans": 0, "members": 0, "memberships": 0, "attendance": 0}
 
@@ -94,7 +96,9 @@ def seed_demo(db: Session, *, member_count: int = DEMO_MEMBER_COUNT, environment
                 id=plan_id,
                 code=code,
                 name=name,
-                description="Synthetic Gridstone demonstration plan; never production customer data.",
+                description=(
+                    "Synthetic Gridstone demonstration plan; never production customer data."
+                ),
                 duration_days=duration_days,
                 price=price,
                 currency="INR",
@@ -151,10 +155,18 @@ def seed_demo(db: Session, *, member_count: int = DEMO_MEMBER_COUNT, environment
             attendance_id = _stable_id("attendance", code)
             if db.get(Attendance, attendance_id) is None:
                 day = SEED_ANCHOR - timedelta(days=index % 14)
-                local_check_in = datetime.combine(day, time(hour=6 + (index % 10)), tzinfo=settings.timezone)
+                local_check_in = datetime.combine(
+                    day,
+                    time(hour=6 + (index % 10)),
+                    tzinfo=settings.timezone,
+                )
                 checked_in_at = local_check_in.astimezone(UTC)
                 is_open = index <= 4 and membership.status == "active" and member.is_active
-                checked_out_at = None if is_open else checked_in_at + timedelta(minutes=45 + index % 75)
+                checked_out_at = (
+                    None
+                    if is_open
+                    else checked_in_at + timedelta(minutes=45 + index % 75)
+                )
                 db.add(
                     Attendance(
                         id=attendance_id,
