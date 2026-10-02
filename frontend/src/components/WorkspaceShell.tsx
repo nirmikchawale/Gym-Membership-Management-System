@@ -1,8 +1,9 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { Database, LogOut, Menu, ShieldCheck, X } from 'lucide-react'
+import { Database, LogOut, Menu, RotateCcw, ShieldCheck, X } from 'lucide-react'
 import { NavLink, Outlet, useLocation } from 'react-router-dom'
 import type { AuthUser } from '../lib/api'
 import type { HealthState } from '../lib/app-state'
+import { resetInteractiveDemo } from '../lib/demo-runtime'
 import { navItems } from '../lib/navigation'
 import { Brand } from './Brand'
 import { ThemeToggle } from './ThemeToggle'
@@ -18,7 +19,7 @@ function initials(name: string) {
 }
 
 function healthLabel(health: HealthState, publicPreview: boolean) {
-  if (publicPreview) return 'Public preview'
+  if (publicPreview) return 'Interactive demo'
   if (health.kind === 'loaded') return 'Systems online'
   if (health.kind === 'error') return 'Health unavailable'
   return 'Checking systems'
@@ -78,6 +79,11 @@ export function WorkspaceShell({
     }
   }
 
+  function handleDemoReset() {
+    resetInteractiveDemo()
+    window.location.reload()
+  }
+
   const systemLabel = healthLabel(health, publicPreview)
 
   return (
@@ -116,7 +122,7 @@ export function WorkspaceShell({
 
         <div className="workspace-chip">
           <span className="workspace-chip__dot" aria-hidden="true" />
-          <span>{publicPreview ? 'Gridstone public preview' : 'Operations workspace'}</span>
+          <span>{publicPreview ? 'Interactive demo sandbox' : 'Operations workspace'}</span>
         </div>
 
         <nav className="nav-list">
@@ -155,7 +161,7 @@ export function WorkspaceShell({
           </div>
           <p className="sidebar__caption">
             {publicPreview
-              ? 'Synthetic dataset · no production customer data'
+              ? 'Synthetic session data · no production customer data'
               : 'Asia/Kolkata · Secure staff session'}
           </p>
         </div>
@@ -178,7 +184,7 @@ export function WorkspaceShell({
             <div>
               <p className="topbar__eyebrow">Gridstone / {currentItem.label}</p>
               <p className="topbar__title">
-                {publicPreview ? 'Gridstone product preview' : 'Operations workspace'}
+                {publicPreview ? 'Interactive synthetic demo' : 'Operations workspace'}
               </p>
             </div>
           </div>
@@ -199,6 +205,18 @@ export function WorkspaceShell({
               {systemLabel}
             </Badge>
 
+            {publicPreview && (
+              <Button
+                variant="ghost"
+                className="topbar__logout"
+                type="button"
+                icon={<RotateCcw size={16} aria-hidden="true" />}
+                onClick={handleDemoReset}
+              >
+                Reset demo data
+              </Button>
+            )}
+
             <ThemeToggle compact />
 
             <div className="user-chip">
@@ -209,7 +227,7 @@ export function WorkspaceShell({
                 <strong>{user.full_name}</strong>
                 <small>
                   <ShieldCheck size={12} aria-hidden="true" />
-                  {publicPreview ? 'preview' : user.role}
+                  {publicPreview ? 'demo admin' : user.role}
                 </small>
               </span>
             </div>

@@ -3,6 +3,7 @@ import {
   BadgeCheck,
   BarChart3,
   ClipboardList,
+  CreditCard,
   LayoutDashboard,
   Users,
   type LucideIcon,
@@ -94,4 +95,5 @@ export const moduleDefinitions: ModuleDefinition[] = [
 export const navItems = [
   { label: 'Overview', path: '/', icon: LayoutDashboard },
   ...moduleDefinitions.map(({ label, path, icon }) => ({ label, path, icon })),
+  { label: 'Payments', path: '/payments', icon: CreditCard },
 ]

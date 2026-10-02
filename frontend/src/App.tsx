@@ -3,7 +3,6 @@ import { AlertTriangle } from 'lucide-react'
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
 import { getCurrentUser, getHealth, logout, type AuthUser } from './lib/api'
 import type { HealthState } from './lib/app-state'
-import { moduleDefinitions } from './lib/navigation'
 import { useScrollTide } from './lib/useScrollTide'
 import { Brand } from './components/Brand'
 import { Button } from './components/ui'
@@ -13,8 +12,8 @@ import { HomePage } from './pages/HomePage'
 import { LoginPage } from './pages/LoginPage'
 import { MembersPage } from './pages/MembersPage'
 import { MembershipsPage } from './pages/MembershipsPage'
-import { ModulePage } from './pages/ModulePage'
 import { NotFoundPage } from './pages/NotFoundPage'
+import { PaymentsPage } from './pages/PaymentsPage'
 import { PlansPage } from './pages/PlansPage'
 import { ReportsPage } from './pages/ReportsPage'
 
@@ -26,9 +25,9 @@ type AuthState =
 
 const publicPreviewUser: AuthUser = {
   id: '00000000-0000-0000-0000-000000000000',
-  email: 'preview@gridstone.app',
-  full_name: 'Gridstone Preview',
-  role: 'staff',
+  email: 'demo@gridstone.invalid',
+  full_name: 'Gridstone Demo Admin',
+  role: 'admin',
 }
 
 function isPublicPreviewBuild() {
@@ -81,11 +80,12 @@ function GridstoneApplication() {
     void getCurrentUser(controller.signal)
       .then((user) => setAuth(user ? { kind: 'authenticated', user } : { kind: 'anonymous' }))
       .catch((error: unknown) => {
-        if (!controller.signal.aborted)
+        if (!controller.signal.aborted) {
           setAuth({
             kind: 'error',
             message: error instanceof Error ? error.message : 'Unable to verify your session',
           })
+        }
       })
     void getHealth(controller.signal)
       .then((data) => setHealth({ kind: 'loaded', data }))
@@ -119,11 +119,6 @@ function GridstoneApplication() {
     setAuth({ kind: 'anonymous' })
   }
 
-  const laterModules = moduleDefinitions.filter(
-    (module) =>
-      !['/members', '/plans', '/memberships', '/attendance', '/reports'].includes(module.path),
-  )
-
   return (
     <Routes>
       <Route
@@ -149,13 +144,7 @@ function GridstoneApplication() {
         <Route path="memberships" element={<MembershipsPage publicPreview={publicPreview} />} />
         <Route path="attendance" element={<AttendancePage publicPreview={publicPreview} />} />
         <Route path="reports" element={<ReportsPage publicPreview={publicPreview} />} />
-        {laterModules.map((module) => (
-          <Route
-            key={module.path}
-            path={module.path.slice(1)}
-            element={<ModulePage module={module} />}
-          />
-        ))}
+        <Route path="payments" element={<PaymentsPage />} />
         <Route path="*" element={<NotFoundPage />} />
       </Route>
     </Routes>

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, type FormEvent } from 'react'
+import { useEffect, useState, type FormEvent } from 'react'
 import {
   BadgeIndianRupee,
   CalendarDays,
@@ -20,7 +20,8 @@ import {
   type PlanInput,
   type PlanRecord,
 } from '../lib/api'
-import { demoPlans, formatINR, type DemoPlan } from '../lib/demo-data'
+import { formatINR } from '../lib/demo-data'
+import { getDemoPlanMemberCount } from '../lib/demo-runtime'
 import { Badge, Button } from '../components/ui'
 
 type StatusFilter = 'all' | 'active' | 'inactive'
@@ -39,7 +40,7 @@ type DisplayPlan = {
 
 const PAGE_SIZE = 20
 
-function fromApi(plan: PlanRecord): DisplayPlan {
+function fromApi(plan: PlanRecord, publicPreview = false): DisplayPlan {
   return {
     id: plan.id,
     code: plan.code,
@@ -49,25 +50,7 @@ function fromApi(plan: PlanRecord): DisplayPlan {
     price: plan.price,
     currency: plan.currency,
     isActive: plan.is_active,
-  }
-}
-
-function durationFromDemo(value: string) {
-  const parsed = Number.parseInt(value, 10)
-  return Number.isFinite(parsed) ? parsed : 0
-}
-
-function fromDemo(plan: DemoPlan): DisplayPlan {
-  return {
-    id: `demo:${plan.code}`,
-    code: plan.code,
-    name: plan.name,
-    description: plan.description,
-    durationDays: durationFromDemo(plan.duration),
-    price: plan.price.toFixed(2),
-    currency: 'INR',
-    isActive: plan.availability === 'Active',
-    activeMembers: plan.activeMembers,
+    activeMembers: publicPreview ? getDemoPlanMemberCount(plan.id) : undefined,
   }
 }
 
@@ -79,11 +62,13 @@ function money(plan: DisplayPlan) {
 function PlanFormDialog({
   mode,
   plan,
+  publicPreview,
   onClose,
   onSaved,
 }: {
   mode: 'create' | 'edit'
   plan: DisplayPlan | null
+  publicPreview: boolean
   onClose: () => void
   onSaved: (plan: DisplayPlan) => void
 }) {
@@ -119,7 +104,7 @@ function PlanFormDialog({
         mode === 'create' || plan === null
           ? await createPlan(payload)
           : await updatePlan(plan.id, payload)
-      onSaved(fromApi(saved))
+      onSaved(fromApi(saved, publicPreview))
     } catch (submitError: unknown) {
       setError(
         submitError instanceof Error ? submitError.message : 'Unable to save membership plan',
@@ -145,7 +130,11 @@ function PlanFormDialog({
         <div className="member-form-dialog__header">
           <div>
             <p className="card-eyebrow">
-              {mode === 'create' ? 'New membership plan' : 'Plan settings'}
+              {publicPreview
+                ? 'Demo sandbox'
+                : mode === 'create'
+                  ? 'New membership plan'
+                  : 'Plan settings'}
             </p>
             <h2 id="plan-form-title">{mode === 'create' ? 'Create a plan' : 'Edit plan'}</h2>
           </div>
@@ -221,6 +210,13 @@ function PlanFormDialog({
             </p>
           )}
 
+          {publicPreview && (
+            <p className="plan-detail__note">
+              Demo edits affect the synthetic catalogue only. Existing membership price snapshots
+              remain unchanged.
+            </p>
+          )}
+
           <div className="member-form__actions">
             <Button type="button" variant="secondary" onClick={onClose} disabled={submitting}>
               Cancel
@@ -242,14 +238,14 @@ export function PlansPage({ publicPreview, user }: { publicPreview: boolean; use
   const [page, setPage] = useState(1)
   const [plans, setPlans] = useState<DisplayPlan[]>([])
   const [total, setTotal] = useState(0)
-  const [loading, setLoading] = useState(!publicPreview)
+  const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const [formMode, setFormMode] = useState<'create' | 'edit' | null>(null)
   const [refreshKey, setRefreshKey] = useState(0)
   const [statusBusy, setStatusBusy] = useState(false)
 
-  const canManage = !publicPreview && user.role === 'admin'
+  const canManage = user.role === 'admin'
 
   useEffect(() => {
     const timer = window.setTimeout(() => setDebouncedQuery(query.trim()), 250)
@@ -258,31 +254,7 @@ export function PlansPage({ publicPreview, user }: { publicPreview: boolean; use
 
   useEffect(() => setPage(1), [debouncedQuery, status])
 
-  const filteredDemoPlans = useMemo(() => {
-    if (!publicPreview) return []
-    const normalized = debouncedQuery.toLowerCase()
-    return demoPlans.map(fromDemo).filter((plan) => {
-      const matchesStatus =
-        status === 'all' || (status === 'active' ? plan.isActive : !plan.isActive)
-      const matchesQuery =
-        !normalized ||
-        [plan.code, plan.name, plan.description ?? '', String(plan.durationDays)]
-          .join(' ')
-          .toLowerCase()
-          .includes(normalized)
-      return matchesStatus && matchesQuery
-    })
-  }, [debouncedQuery, publicPreview, status])
-
   useEffect(() => {
-    if (publicPreview) {
-      const offset = (page - 1) * PAGE_SIZE
-      setPlans(filteredDemoPlans.slice(offset, offset + PAGE_SIZE))
-      setTotal(filteredDemoPlans.length)
-      setLoading(false)
-      return
-    }
-
     const controller = new AbortController()
     setLoading(true)
     setError(null)
@@ -294,7 +266,7 @@ export function PlansPage({ publicPreview, user }: { publicPreview: boolean; use
       signal: controller.signal,
     })
       .then((response) => {
-        setPlans(response.items.map(fromApi))
+        setPlans(response.items.map((plan) => fromApi(plan, publicPreview)))
         setTotal(response.total)
       })
       .catch((loadError: unknown) => {
@@ -308,7 +280,7 @@ export function PlansPage({ publicPreview, user }: { publicPreview: boolean; use
         if (!controller.signal.aborted) setLoading(false)
       })
     return () => controller.abort()
-  }, [debouncedQuery, filteredDemoPlans, page, publicPreview, refreshKey, status])
+  }, [debouncedQuery, page, publicPreview, refreshKey, status])
 
   const pageCount = Math.max(1, Math.ceil(total / PAGE_SIZE))
   useEffect(() => {
@@ -316,16 +288,14 @@ export function PlansPage({ publicPreview, user }: { publicPreview: boolean; use
   }, [page, pageCount])
 
   const selected = plans.find((plan) => plan.id === selectedId) ?? null
-  const activeCount = publicPreview
-    ? demoPlans.filter((plan) => plan.availability === 'Active').length
-    : plans.filter((plan) => plan.isActive).length
+  const activeCount = plans.filter((plan) => plan.isActive).length
 
   async function togglePlan(plan: DisplayPlan) {
     if (!canManage) return
     setStatusBusy(true)
     setError(null)
     try {
-      const saved = fromApi(await setPlanActive(plan.id, !plan.isActive))
+      const saved = fromApi(await setPlanActive(plan.id, !plan.isActive), publicPreview)
       setSelectedId(saved.id)
       setRefreshKey((value) => value + 1)
     } catch (toggleError: unknown) {
@@ -354,15 +324,13 @@ export function PlansPage({ publicPreview, user }: { publicPreview: boolean; use
             stored on historical memberships.
           </p>
         </div>
-        {publicPreview ? (
-          <Badge tone="accent">Read-only plan preview</Badge>
-        ) : canManage ? (
+        {canManage ? (
           <Button
             type="button"
             icon={<Plus size={16} aria-hidden="true" />}
             onClick={() => setFormMode('create')}
           >
-            Create plan
+            {publicPreview ? 'Create demo plan' : 'Create plan'}
           </Button>
         ) : (
           <Badge tone="neutral">
@@ -375,20 +343,34 @@ export function PlansPage({ publicPreview, user }: { publicPreview: boolean; use
       <section className="plan-metrics" aria-label="Plan summary">
         <article>
           <CalendarDays size={18} aria-hidden="true" />
-          <span>Total plans</span>
-          <strong>{publicPreview ? demoPlans.length : total}</strong>
+          <span>Matching plans</span>
+          <strong>{total}</strong>
         </article>
         <article>
           <BadgeIndianRupee size={18} aria-hidden="true" />
-          <span>Active availability</span>
+          <span>Active on this page</span>
           <strong>{activeCount}</strong>
         </article>
         <article>
           <CirclePause size={18} aria-hidden="true" />
-          <span>Inactive on this view</span>
+          <span>Inactive on this page</span>
           <strong>{plans.filter((plan) => !plan.isActive).length}</strong>
         </article>
       </section>
+
+      {publicPreview && (
+        <aside className="demo-notice" aria-label="Plan demo notice">
+          <ShieldCheck size={18} aria-hidden="true" />
+          <div>
+            <strong>Interactive synthetic plan catalogue</strong>
+            <p>
+              Create, edit, activate or archive plans inside the demo sandbox. Member usage counts
+              are derived from the same synthetic memberships shown elsewhere in Gridstone.
+            </p>
+          </div>
+          <Badge tone="success">Demo sandbox</Badge>
+        </aside>
+      )}
 
       <section className="plan-workspace" aria-label="Membership plan workspace">
         <article className="data-card plan-directory">
@@ -439,7 +421,7 @@ export function PlansPage({ publicPreview, user }: { publicPreview: boolean; use
                   <th>Plan</th>
                   <th>Duration</th>
                   <th>Price</th>
-                  {publicPreview && <th>Demo members</th>}
+                  {publicPreview && <th>Demo memberships</th>}
                   <th>Status</th>
                   <th>
                     <span className="sr-only">Actions</span>
@@ -468,7 +450,7 @@ export function PlansPage({ publicPreview, user }: { publicPreview: boolean; use
                         <strong>{money(plan)}</strong>
                       </td>
                       {publicPreview && (
-                        <td data-label="Demo members">{plan.activeMembers ?? 0}</td>
+                        <td data-label="Demo memberships">{plan.activeMembers ?? 0}</td>
                       )}
                       <td data-label="Status">
                         <Badge tone={plan.isActive ? 'success' : 'neutral'}>
@@ -553,7 +535,7 @@ export function PlansPage({ publicPreview, user }: { publicPreview: boolean; use
                 </div>
                 {publicPreview && (
                   <div>
-                    <dt>Demo members</dt>
+                    <dt>Demo memberships</dt>
                     <dd>{selected.activeMembers ?? 0}</dd>
                   </div>
                 )}
@@ -583,9 +565,7 @@ export function PlansPage({ publicPreview, user }: { publicPreview: boolean; use
                 </div>
               ) : (
                 <p className="plan-detail__note">
-                  {publicPreview
-                    ? 'This deployment is a read-only synthetic preview.'
-                    : 'Plan pricing and availability changes require an administrator account.'}
+                  Plan pricing and availability changes require an administrator account.
                 </p>
               )}
             </>
@@ -614,6 +594,7 @@ export function PlansPage({ publicPreview, user }: { publicPreview: boolean; use
         <PlanFormDialog
           mode={formMode}
           plan={formMode === 'edit' ? selected : null}
+          publicPreview={publicPreview}
           onClose={() => setFormMode(null)}
           onSaved={savedPlan}
         />

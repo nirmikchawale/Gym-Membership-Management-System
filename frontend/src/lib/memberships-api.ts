@@ -1,3 +1,11 @@
+import {
+  demoCreateMembership,
+  demoListMemberships,
+  demoRenewMembership,
+  demoTransitionMembership,
+  isInteractiveDemoRuntime,
+} from './demo-runtime'
+
 export type MembershipStatus = 'scheduled' | 'active' | 'expired' | 'cancelled' | 'frozen'
 
 export type MembershipRecord = {
@@ -81,6 +89,10 @@ export async function listMemberships({
   offset?: number
   signal?: AbortSignal
 } = {}): Promise<MembershipListResponse> {
+  if (isInteractiveDemoRuntime()) {
+    return demoListMemberships({ query, status, memberId, limit, offset })
+  }
+
   const params = new URLSearchParams({ status, limit: String(limit), offset: String(offset) })
   if (query?.trim()) params.set('query', query.trim())
   if (memberId) params.set('member_id', memberId)
@@ -94,6 +106,8 @@ export async function listMemberships({
 }
 
 export async function createMembership(payload: MembershipInput): Promise<MembershipRecord> {
+  if (isInteractiveDemoRuntime()) return demoCreateMembership(payload)
+
   const response = await fetch('/api/v1/memberships', {
     method: 'POST',
     headers: {
@@ -112,6 +126,8 @@ export async function renewMembership(
   membershipId: string,
   payload: MembershipRenewInput,
 ): Promise<MembershipRecord> {
+  if (isInteractiveDemoRuntime()) return demoRenewMembership(membershipId, payload)
+
   const response = await fetch(`/api/v1/memberships/${membershipId}/renew`, {
     method: 'POST',
     headers: {
@@ -130,6 +146,8 @@ export async function transitionMembership(
   membershipId: string,
   action: 'cancel' | 'freeze' | 'resume',
 ): Promise<MembershipRecord> {
+  if (isInteractiveDemoRuntime()) return demoTransitionMembership(membershipId, action)
+
   const response = await fetch(`/api/v1/memberships/${membershipId}/${action}`, {
     method: 'POST',
     headers: { Accept: 'application/json', ...csrfHeaders() },

@@ -17,7 +17,7 @@ function DashboardLoading() {
             <div>
               <span>{label}</span>
               <strong>-</strong>
-              <small>Loading persisted records...</small>
+              <small>Loading operational records...</small>
             </div>
           </article>
         ))}
@@ -64,7 +64,7 @@ export function HomePage({
   }, [publicPreview, retryKey])
 
   const sourceLabel = publicPreview
-    ? 'Synthetic preview'
+    ? 'Interactive synthetic demo'
     : health.kind === 'loaded'
       ? 'API + PostgreSQL online'
       : 'Data connection checking'
@@ -77,8 +77,8 @@ export function HomePage({
           <p className="page-eyebrow">Operational dashboard</p>
           <h1>Today at Gridstone.</h1>
           <p>
-            Welcome, <strong>{user.full_name}</strong>. Every number below is derived from member,
-            membership and attendance records already used by the operational workflows.
+            Welcome, <strong>{user.full_name}</strong>. Every number below is derived from the same
+            member, membership and attendance records used by the operational workflows.
           </p>
         </div>
         <Badge tone={sourceTone}>{sourceLabel}</Badge>

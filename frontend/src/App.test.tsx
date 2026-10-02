@@ -147,6 +147,7 @@ describe('App', () => {
     vi.unstubAllGlobals()
     window.history.replaceState({}, '', '/')
     window.localStorage.clear()
+    window.sessionStorage.clear()
     delete document.documentElement.dataset.theme
   })
 
@@ -172,7 +173,7 @@ describe('App', () => {
     expect(screen.getByText(/26 in last 7 days/i)).toBeVisible()
     expect(screen.getAllByText(/Gridstone Admin/i)).toHaveLength(2)
     expect(screen.getByRole('link', { name: /^reports$/i })).toBeVisible()
-    expect(screen.queryByRole('link', { name: /^payments$/i })).not.toBeInTheDocument()
+    expect(screen.getByRole('link', { name: /^payments$/i })).toBeVisible()
   })
 
   it('supports the completed Members vertical slice', async () => {
@@ -183,7 +184,7 @@ describe('App', () => {
     expect(await screen.findByRole('heading', { name: 'Members', level: 1 })).toBeVisible()
     expect(await screen.findByText(/Aarav Mehta/i)).toBeVisible()
     expect(screen.getByRole('button', { name: /add member/i })).toBeVisible()
-    expect(screen.getByPlaceholderText(/search name, code, email, phone or plan/i)).toBeVisible()
+    expect(screen.getByPlaceholderText(/search name, code, email or phone/i)).toBeVisible()
   })
 
   it('supports the Membership Plans vertical slice for administrators', async () => {
@@ -221,6 +222,16 @@ describe('App', () => {
     fireEvent.change(attendanceRange, { target: { value: '14' } })
     expect(await screen.findByText(/Last 14 days/i)).toBeVisible()
     expect(screen.getByText(/Payments excluded/i)).toBeVisible()
+  })
+
+  it('keeps Payments as the sole explicit unavailable module', async () => {
+    window.history.replaceState({}, '', '/payments')
+    mockFetch(true)
+    render(<App />)
+
+    expect(await screen.findByRole('heading', { name: 'Payments', level: 1 })).toBeVisible()
+    expect(screen.getByText(/Not implemented — intentionally out of scope/i)).toBeVisible()
+    expect(screen.getByText(/All other navigation modules are implemented/i)).toBeVisible()
   })
 
   it('persists explicit light and dark theme selection', async () => {
