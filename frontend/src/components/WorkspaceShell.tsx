@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { Database, LogOut, Menu, ShieldCheck, X } from 'lucide-react'
 import { NavLink, Outlet, useLocation } from 'react-router-dom'
 import type { AuthUser } from '../lib/api'
@@ -38,7 +38,14 @@ export function WorkspaceShell({
   const location = useLocation()
   const [mobileNavOpen, setMobileNavOpen] = useState(false)
   const [signoutError, setSignoutError] = useState<string | null>(null)
+  const menuButtonRef = useRef<HTMLButtonElement>(null)
+  const closeButtonRef = useRef<HTMLButtonElement>(null)
   const currentItem = navItems.find((item) => item.path === location.pathname) ?? navItems[0]
+
+  const closeMobileNav = useCallback((restoreFocus = true) => {
+    setMobileNavOpen(false)
+    if (restoreFocus) menuButtonRef.current?.focus()
+  }, [])
 
   useEffect(() => {
     setMobileNavOpen(false)
@@ -49,17 +56,18 @@ export function WorkspaceShell({
 
     const previousOverflow = document.body.style.overflow
     const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') setMobileNavOpen(false)
+      if (event.key === 'Escape') closeMobileNav()
     }
 
     document.body.style.overflow = 'hidden'
+    closeButtonRef.current?.focus()
     window.addEventListener('keydown', onKeyDown)
 
     return () => {
       document.body.style.overflow = previousOverflow
       window.removeEventListener('keydown', onKeyDown)
     }
-  }, [mobileNavOpen])
+  }, [closeMobileNav, mobileNavOpen])
 
   async function handleLogout() {
     setSignoutError(null)
@@ -84,21 +92,23 @@ export function WorkspaceShell({
           className="mobile-backdrop"
           type="button"
           aria-label="Close navigation"
-          onClick={() => setMobileNavOpen(false)}
+          onClick={() => closeMobileNav()}
         />
       )}
 
       <aside
+        id="primary-navigation"
         className={`sidebar${mobileNavOpen ? ' sidebar--open' : ''}`}
         aria-label="Primary navigation"
       >
         <div className="sidebar__top">
           <Brand compact />
           <button
+            ref={closeButtonRef}
             className="icon-button sidebar__close"
             type="button"
             aria-label="Close navigation"
-            onClick={() => setMobileNavOpen(false)}
+            onClick={() => closeMobileNav()}
           >
             <X size={20} aria-hidden="true" />
           </button>
@@ -118,6 +128,7 @@ export function WorkspaceShell({
                 to={item.path}
                 end={item.path === '/'}
                 className={({ isActive }) => `nav-item${isActive ? ' nav-item--active' : ''}`}
+                onClick={() => setMobileNavOpen(false)}
               >
                 <Icon size={18} strokeWidth={1.8} aria-hidden="true" />
                 <span>{item.label}</span>
@@ -154,9 +165,12 @@ export function WorkspaceShell({
         <header className="topbar">
           <div className="topbar__left">
             <button
+              ref={menuButtonRef}
               className="icon-button topbar__menu"
               type="button"
               aria-label="Open navigation"
+              aria-controls="primary-navigation"
+              aria-expanded={mobileNavOpen}
               onClick={() => setMobileNavOpen(true)}
             >
               <Menu size={20} aria-hidden="true" />
