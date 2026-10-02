@@ -116,7 +116,7 @@ export function WorkspaceShell({
 
         <div className="workspace-chip">
           <span className="workspace-chip__dot" aria-hidden="true" />
-          <span>{publicPreview ? 'Members public preview' : 'Operations workspace'}</span>
+          <span>{publicPreview ? 'Gridstone public preview' : 'Operations workspace'}</span>
         </div>
 
         <nav className="nav-list">
@@ -155,7 +155,7 @@ export function WorkspaceShell({
           </div>
           <p className="sidebar__caption">
             {publicPreview
-              ? 'Members demo · 112 synthetic records'
+              ? 'Synthetic dataset · no production customer data'
               : 'Asia/Kolkata · Secure staff session'}
           </p>
         </div>
@@ -178,7 +178,7 @@ export function WorkspaceShell({
             <div>
               <p className="topbar__eyebrow">Gridstone / {currentItem.label}</p>
               <p className="topbar__title">
-                {publicPreview ? 'Members product preview' : 'Operations workspace'}
+                {publicPreview ? 'Gridstone product preview' : 'Operations workspace'}
               </p>
             </div>
           </div>
