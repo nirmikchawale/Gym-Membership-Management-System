@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useState } from 'react'
 import {
   CalendarDays,
   ChevronLeft,
@@ -22,7 +22,6 @@ import {
   type AttendanceRecord,
 } from '../lib/attendance-api'
 import { listMembers, type MemberRecord } from '../lib/api'
-import { demoAttendance, demoMembers, demoMemberships } from '../lib/demo-data'
 
 const PAGE_SIZE = 20
 
@@ -60,36 +59,6 @@ function memberFromApi(member: MemberRecord): LookupMember {
   }
 }
 
-function previewVisits(): AttendanceRecord[] {
-  return demoAttendance.map((visit) => {
-    const membership = demoMemberships.find((item) => item.memberCode === visit.memberCode)
-    const checkedIn = `${visit.date}T${visit.checkIn}:00+05:30`
-    const checkedOut = visit.checkOut ? `${visit.date}T${visit.checkOut}:00+05:30` : null
-    const durationMinutes = checkedOut
-      ? Math.max(
-          0,
-          Math.round((new Date(checkedOut).getTime() - new Date(checkedIn).getTime()) / 60000),
-        )
-      : null
-    return {
-      id: `demo:${visit.id}`,
-      member_id: `demo:${visit.memberCode}`,
-      member_code: visit.memberCode,
-      member_name: visit.memberName,
-      membership_id: membership ? `demo:${membership.id}` : null,
-      plan_code: membership?.planCode ?? null,
-      plan_name: membership?.planName ?? null,
-      checked_in_at: checkedIn,
-      checked_out_at: checkedOut,
-      is_open: visit.checkOut === null,
-      duration_minutes: durationMinutes,
-      notes: null,
-      created_at: checkedIn,
-      updated_at: checkedOut ?? checkedIn,
-    }
-  })
-}
-
 export function AttendancePage({ publicPreview }: { publicPreview: boolean }) {
   const [lookup, setLookup] = useState('')
   const [debouncedLookup, setDebouncedLookup] = useState('')
@@ -111,9 +80,7 @@ export function AttendancePage({ publicPreview }: { publicPreview: boolean }) {
   const [page, setPage] = useState(1)
   const [records, setRecords] = useState<AttendanceRecord[]>([])
   const [total, setTotal] = useState(0)
-  const [historyLoading, setHistoryLoading] = useState(!publicPreview)
-
-  const syntheticVisits = useMemo(() => previewVisits(), [])
+  const [historyLoading, setHistoryLoading] = useState(true)
 
   useEffect(() => {
     const timer = window.setTimeout(() => setDebouncedLookup(lookup.trim()), 220)
@@ -133,79 +100,26 @@ export function AttendancePage({ publicPreview }: { publicPreview: boolean }) {
       setLookupLoading(false)
       return
     }
-    if (publicPreview) {
-      const query = debouncedLookup.toLowerCase()
-      setMatches(
-        demoMembers
-          .filter((member) =>
-            [member.code, member.name, member.email, member.phone]
-              .join(' ')
-              .toLowerCase()
-              .includes(query),
-          )
-          .slice(0, 8)
-          .map((member) => ({
-            id: `demo:${member.code}`,
-            member_code: member.code,
-            member_name: member.name,
-            is_active: member.status === 'Active',
-          })),
-      )
-      setLookupLoading(false)
-      return
-    }
 
     const controller = new AbortController()
     setLookupLoading(true)
+    setError(null)
     void listMembers({ query: debouncedLookup, status: 'all', limit: 8, signal: controller.signal })
       .then((response) => setMatches(response.items.map(memberFromApi)))
       .catch((loadError: unknown) => {
-        if (!controller.signal.aborted)
+        if (!controller.signal.aborted) {
           setError(loadError instanceof Error ? loadError.message : 'Unable to search members')
+        }
       })
       .finally(() => {
         if (!controller.signal.aborted) setLookupLoading(false)
       })
     return () => controller.abort()
-  }, [debouncedLookup, publicPreview])
+  }, [debouncedLookup, refreshKey])
 
   useEffect(() => {
     if (!selectedMember) {
       setAccess(null)
-      return
-    }
-    if (publicPreview) {
-      const member = demoMembers.find((item) => `demo:${item.code}` === selectedMember.id)
-      const openVisit =
-        syntheticVisits.find((item) => item.member_code === member?.code && item.is_open) ?? null
-      const membership = demoMemberships.find((item) => item.memberCode === member?.code)
-      const active = member?.status === 'Active' && Boolean(membership)
-      setAccess({
-        member_id: selectedMember.id,
-        member_code: selectedMember.member_code,
-        member_name: selectedMember.member_name,
-        member_active: selectedMember.is_active,
-        eligible: active && !openVisit,
-        reason: !selectedMember.is_active
-          ? 'Member account is inactive'
-          : openVisit
-            ? 'Member is already checked in'
-            : active
-              ? 'Access valid for check-in'
-              : 'No active membership covers today',
-        membership: membership
-          ? {
-              id: `demo:${membership.id}`,
-              plan_code: membership.planCode,
-              plan_name: membership.planName,
-              start_date: membership.startsOn,
-              end_date: membership.endsOn,
-              status: membership.status.toLowerCase(),
-            }
-          : null,
-        open_visit: openVisit,
-      })
-      setAccessLoading(false)
       return
     }
 
@@ -215,38 +129,17 @@ export function AttendancePage({ publicPreview }: { publicPreview: boolean }) {
     void getAttendanceAccess(selectedMember.id, controller.signal)
       .then(setAccess)
       .catch((loadError: unknown) => {
-        if (!controller.signal.aborted)
+        if (!controller.signal.aborted) {
           setError(loadError instanceof Error ? loadError.message : 'Unable to validate access')
+        }
       })
       .finally(() => {
         if (!controller.signal.aborted) setAccessLoading(false)
       })
     return () => controller.abort()
-  }, [publicPreview, refreshKey, selectedMember, syntheticVisits])
+  }, [refreshKey, selectedMember])
 
   useEffect(() => {
-    if (publicPreview) {
-      const query = debouncedHistoryQuery.toLowerCase()
-      const filtered = syntheticVisits.filter((visit) => {
-        const queryMatch =
-          !query ||
-          [visit.member_code, visit.member_name, visit.plan_code ?? '']
-            .join(' ')
-            .toLowerCase()
-            .includes(query)
-        const stateMatch = state === 'all' || (state === 'open' ? visit.is_open : !visit.is_open)
-        const visitDate = visit.checked_in_at.slice(0, 10)
-        const fromMatch = !fromDate || visitDate >= fromDate
-        const toMatch = !toDate || visitDate <= toDate
-        return queryMatch && stateMatch && fromMatch && toMatch
-      })
-      const offset = (page - 1) * PAGE_SIZE
-      setRecords(filtered.slice(offset, offset + PAGE_SIZE))
-      setTotal(filtered.length)
-      setHistoryLoading(false)
-      return
-    }
-
     const controller = new AbortController()
     setHistoryLoading(true)
     setError(null)
@@ -264,26 +157,18 @@ export function AttendancePage({ publicPreview }: { publicPreview: boolean }) {
         setTotal(response.total)
       })
       .catch((loadError: unknown) => {
-        if (!controller.signal.aborted)
+        if (!controller.signal.aborted) {
           setError(loadError instanceof Error ? loadError.message : 'Unable to load attendance')
+        }
       })
       .finally(() => {
         if (!controller.signal.aborted) setHistoryLoading(false)
       })
     return () => controller.abort()
-  }, [
-    debouncedHistoryQuery,
-    fromDate,
-    page,
-    publicPreview,
-    refreshKey,
-    state,
-    syntheticVisits,
-    toDate,
-  ])
+  }, [debouncedHistoryQuery, fromDate, page, refreshKey, state, toDate])
 
   async function performCheckIn() {
-    if (!selectedMember || publicPreview) return
+    if (!selectedMember) return
     setBusy(true)
     setError(null)
     try {
@@ -298,7 +183,7 @@ export function AttendancePage({ publicPreview }: { publicPreview: boolean }) {
   }
 
   async function performCheckOut() {
-    if (!access?.open_visit || publicPreview) return
+    if (!access?.open_visit) return
     setBusy(true)
     setError(null)
     try {
@@ -312,6 +197,10 @@ export function AttendancePage({ publicPreview }: { publicPreview: boolean }) {
   }
 
   const pageCount = Math.max(1, Math.ceil(total / PAGE_SIZE))
+  useEffect(() => {
+    if (page > pageCount) setPage(pageCount)
+  }, [page, pageCount])
+
   const openOnPage = records.filter((item) => item.is_open).length
 
   return (
@@ -325,11 +214,9 @@ export function AttendancePage({ publicPreview }: { publicPreview: boolean }) {
             ledger.
           </p>
         </div>
-        {publicPreview ? (
-          <Badge tone="accent">Read-only attendance preview</Badge>
-        ) : (
-          <Badge tone="success">Live access control</Badge>
-        )}
+        <Badge tone={publicPreview ? 'accent' : 'success'}>
+          {publicPreview ? 'Interactive demo access' : 'Live access control'}
+        </Badge>
       </header>
 
       <section className="attendance-metrics" aria-label="Attendance summary">
@@ -349,6 +236,20 @@ export function AttendancePage({ publicPreview }: { publicPreview: boolean }) {
           <strong>Access first</strong>
         </article>
       </section>
+
+      {publicPreview && (
+        <aside className="demo-notice" aria-label="Attendance demo notice">
+          <DoorOpen size={18} aria-hidden="true" />
+          <div>
+            <strong>Interactive synthetic front desk</strong>
+            <p>
+              Search any demo member, inspect the real access decision, then check eligible members
+              in and out. The same visit immediately appears in the synthetic ledger and reports.
+            </p>
+          </div>
+          <Badge tone="success">Interactive</Badge>
+        </aside>
+      )}
 
       {error && (
         <div className="workspace-alert" role="alert">
@@ -431,6 +332,7 @@ export function AttendancePage({ publicPreview }: { publicPreview: boolean }) {
                 <strong>{access.eligible ? 'Check-in allowed' : 'Check-in blocked'}</strong>
                 <span>{access.reason}</span>
               </div>
+
               {access.membership && (
                 <dl className="attendance-access-details">
                   <div>
@@ -447,22 +349,21 @@ export function AttendancePage({ publicPreview }: { publicPreview: boolean }) {
                   </div>
                 </dl>
               )}
+
               {access.open_visit ? (
                 <div className="attendance-current-visit">
                   <span>Checked in {formatDateTime(access.open_visit.checked_in_at)}</span>
-                  {!publicPreview && (
-                    <Button
-                      type="button"
-                      variant="secondary"
-                      icon={<LogOut size={16} aria-hidden="true" />}
-                      disabled={busy}
-                      onClick={performCheckOut}
-                    >
-                      {busy ? 'Updating…' : 'Check out'}
-                    </Button>
-                  )}
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    icon={<LogOut size={16} aria-hidden="true" />}
+                    disabled={busy}
+                    onClick={() => void performCheckOut()}
+                  >
+                    {busy ? 'Updating…' : 'Check out'}
+                  </Button>
                 </div>
-              ) : access.eligible && !publicPreview ? (
+              ) : access.eligible ? (
                 <div className="attendance-checkin-actions">
                   <label className="field">
                     <span className="field__label">
@@ -479,17 +380,12 @@ export function AttendancePage({ publicPreview }: { publicPreview: boolean }) {
                     type="button"
                     icon={<LogIn size={16} aria-hidden="true" />}
                     disabled={busy}
-                    onClick={performCheckIn}
+                    onClick={() => void performCheckIn()}
                   >
                     {busy ? 'Checking in…' : 'Check in member'}
                   </Button>
                 </div>
               ) : null}
-              {publicPreview && (
-                <p className="preview-note">
-                  Preview mode shows the access decision but does not mutate attendance.
-                </p>
-              )}
             </>
           )}
         </article>
@@ -503,6 +399,7 @@ export function AttendancePage({ publicPreview }: { publicPreview: boolean }) {
           </div>
           <Badge tone="neutral">{historyLoading ? 'Loading…' : `${total} results`}</Badge>
         </div>
+
         <div className="attendance-toolbar">
           <label className="search-field">
             <Search size={17} aria-hidden="true" />
@@ -588,6 +485,7 @@ export function AttendancePage({ publicPreview }: { publicPreview: boolean }) {
             </div>
           )}
         </div>
+
         <div className="pagination-bar">
           <span>
             Page {page} of {pageCount}
