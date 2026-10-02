@@ -30,29 +30,29 @@ export function HomePage({ user, health }: { user: AuthUser; health: HealthState
           <p className="page-eyebrow">Gridstone workspace</p>
           <h1>The front desk, without the friction.</h1>
           <p>
-            Welcome, <strong>{user.full_name}</strong>. Phase 3D is verified and the Members
-            vertical slice is now the active product workflow.
+            Welcome, <strong>{user.full_name}</strong>. Members and Membership Plans are now real
+            product workflows on the verified Phase 3D foundation.
           </p>
         </div>
         <Badge tone="accent">
           <Sparkles size={13} aria-hidden="true" />
-          Members slice active
+          Members + Plans active
         </Badge>
       </header>
 
-      <section className="hero-grid" aria-label="Gridstone member operations overview">
+      <section className="hero-grid" aria-label="Gridstone operations overview">
         <article className="hero-panel">
           <div className="hero-panel__glow" aria-hidden="true" />
           <div className="hero-copy">
-            <p className="hero-kicker">Current product slice</p>
-            <h2>Member operations are now real.</h2>
+            <p className="hero-kicker">Current product slices</p>
+            <h2>Member operations and plan configuration are real.</h2>
             <p>
-              The authenticated app supports member search, filtering, profiles, creation, editing,
-              activation and deactivation. The public preview carries 112 safe synthetic member
-              records so the same responsive experience can be explored without exposing real data.
+              The authenticated app supports member lifecycle operations plus searchable membership
+              plan configuration with admin-controlled pricing and availability. The public preview
+              remains read-only and uses safe synthetic records.
             </p>
-            <Link className="text-link" to="/members">
-              Open the member directory <ArrowUpRight size={16} aria-hidden="true" />
+            <Link className="text-link" to="/plans">
+              Open membership plans <ArrowUpRight size={16} aria-hidden="true" />
             </Link>
           </div>
 
@@ -104,8 +104,8 @@ export function HomePage({ user, health }: { user: AuthUser; health: HealthState
                 <ShieldCheck size={17} aria-hidden="true" />
               </span>
               <span>
-                <strong>Members API</strong>
-                <small>Authenticated, validated and paginated</small>
+                <strong>Business APIs</strong>
+                <small>Members + plans validated and paginated</small>
               </span>
             </div>
           </div>
@@ -141,13 +141,13 @@ export function HomePage({ user, health }: { user: AuthUser; health: HealthState
           <div className="data-card__header">
             <div>
               <p className="card-eyebrow">Delivery sequence</p>
-              <h2>What stays outside this slice</h2>
+              <h2>What stays outside these slices</h2>
             </div>
             <Badge tone="neutral">Scope locked</Badge>
           </div>
           <div className="compact-list">
             {moduleDefinitions
-              .filter((module) => module.path !== '/members')
+              .filter((module) => module.path !== '/members' && module.path !== '/plans')
               .slice(0, 4)
               .map((module) => (
                 <div className="compact-list__row" key={module.path}>
@@ -165,7 +165,7 @@ export function HomePage({ user, health }: { user: AuthUser; health: HealthState
         </article>
       </section>
 
-      <section className="principle-grid" aria-label="Gridstone member slice principles">
+      <section className="principle-grid" aria-label="Gridstone product principles">
         <article className="principle-card">
           <span>
             <UsersRound size={19} aria-hidden="true" />
@@ -181,9 +181,7 @@ export function HomePage({ user, health }: { user: AuthUser; health: HealthState
           </span>
           <div>
             <strong>Desktop and mobile</strong>
-            <p>
-              The directory changes from a table to touch-friendly member cards at narrow widths.
-            </p>
+            <p>Members and plans adapt from desktop tables to touch-friendly narrow layouts.</p>
           </div>
         </article>
         <article className="principle-card">
