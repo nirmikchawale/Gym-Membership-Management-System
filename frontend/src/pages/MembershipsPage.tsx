@@ -124,7 +124,11 @@ function MembershipFormDialog({
         <div className="member-form-dialog__header">
           <div>
             <p className="card-eyebrow">
-              {publicPreview ? 'Demo sandbox' : mode === 'create' ? 'Membership assignment' : 'Renewal'}
+              {publicPreview
+                ? 'Demo sandbox'
+                : mode === 'create'
+                  ? 'Membership assignment'
+                  : 'Renewal'}
             </p>
             <h2 id="membership-form-title">
               {mode === 'create'

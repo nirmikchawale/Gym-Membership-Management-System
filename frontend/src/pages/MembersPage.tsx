@@ -133,9 +133,7 @@ function MemberFormDialog({
             <p className="card-eyebrow">
               {publicPreview ? 'Demo sandbox' : mode === 'create' ? 'New member' : 'Member record'}
             </p>
-            <h2 id="member-form-title">
-              {mode === 'create' ? 'Add a member' : 'Edit member'}
-            </h2>
+            <h2 id="member-form-title">{mode === 'create' ? 'Add a member' : 'Edit member'}</h2>
           </div>
           <button
             className="icon-button"

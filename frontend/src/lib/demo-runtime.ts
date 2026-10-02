@@ -8,11 +8,7 @@ import type {
   PlanRecord,
   PlanUpdateInput,
 } from './api'
-import type {
-  AttendanceAccess,
-  AttendanceListResponse,
-  AttendanceRecord,
-} from './attendance-api'
+import type { AttendanceAccess, AttendanceListResponse, AttendanceRecord } from './attendance-api'
 import type { DashboardOverview } from './dashboard-api'
 import type {
   MembershipInput,
@@ -119,11 +115,7 @@ function baselineMemberships(members: MemberRecord[], plans: PlanRecord[]) {
       .filter((item) => item.member_id === member.id)
       .sort((left, right) => right.end_date.localeCompare(left.end_date))[0]
     const status: MembershipStatus =
-      membership.status === 'Scheduled'
-        ? 'scheduled'
-        : member.is_active
-          ? 'active'
-          : 'frozen'
+      membership.status === 'Scheduled' ? 'scheduled' : member.is_active ? 'active' : 'frozen'
     records.push({
       id: `demo-membership:${membership.id}`,
       member_id: member.id,
@@ -204,7 +196,10 @@ function baselineMemberships(members: MemberRecord[], plans: PlanRecord[]) {
 
 function visitDurationMinutes(checkIn: string, checkOut: string | null) {
   if (!checkOut) return null
-  return Math.max(0, Math.round((new Date(checkOut).getTime() - new Date(checkIn).getTime()) / 60000))
+  return Math.max(
+    0,
+    Math.round((new Date(checkOut).getTime() - new Date(checkIn).getTime()) / 60000),
+  )
 }
 
 function latestMembershipForMember(memberships: MembershipRecord[], memberId: string) {
@@ -427,7 +422,9 @@ export function demoCreateMember(payload: MemberInput): MemberRecord {
   let created!: MemberRecord
   updateState((state) => {
     const memberCode = payload.member_code?.trim() || uniqueMemberCode(state)
-    if (state.members.some((member) => member.member_code.toLowerCase() === memberCode.toLowerCase())) {
+    if (
+      state.members.some((member) => member.member_code.toLowerCase() === memberCode.toLowerCase())
+    ) {
       throw new Error('Member code already exists in the demo sandbox')
     }
     const id = nextId(state, 'member')
@@ -561,13 +558,16 @@ export function demoUpdatePlan(planId: string, payload: PlanUpdateInput): PlanRe
     if (!plan) throw new Error('Demo plan not found')
     const nextCode = payload.code?.trim() || plan.code
     if (
-      state.plans.some((item) => item.id !== planId && item.code.toLowerCase() === nextCode.toLowerCase())
+      state.plans.some(
+        (item) => item.id !== planId && item.code.toLowerCase() === nextCode.toLowerCase(),
+      )
     ) {
       throw new Error('Plan code already exists in the demo sandbox')
     }
     plan.code = nextCode
     plan.name = payload.name?.trim() ?? plan.name
-    plan.description = payload.description === undefined ? plan.description : payload.description?.trim() || null
+    plan.description =
+      payload.description === undefined ? plan.description : payload.description?.trim() || null
     plan.duration_days = payload.duration_days ?? plan.duration_days
     plan.price = payload.price === undefined ? plan.price : Number(payload.price).toFixed(2)
     plan.currency = payload.currency?.toUpperCase() ?? plan.currency
@@ -579,7 +579,11 @@ export function demoUpdatePlan(planId: string, payload: PlanUpdateInput): PlanRe
         membership.plan_name = plan.name
       })
     state.attendance
-      .filter((visit) => visit.membership_id && state.memberships.find((item) => item.id === visit.membership_id)?.plan_id === planId)
+      .filter(
+        (visit) =>
+          visit.membership_id &&
+          state.memberships.find((item) => item.id === visit.membership_id)?.plan_id === planId,
+      )
       .forEach((visit) => {
         visit.plan_code = plan.code
         visit.plan_name = plan.name
@@ -643,7 +647,9 @@ export function demoCreateMembership(payload: MembershipInput): MembershipRecord
       .filter((item) => item.member_id === member.id && item.status !== 'cancelled')
       .sort((left, right) => right.end_date.localeCompare(left.end_date))[0]
     const requested = payload.start_date || null
-    const startDate = requested || (latest && latest.end_date >= DEMO_AS_OF_DATE ? addDays(latest.end_date, 1) : DEMO_AS_OF_DATE)
+    const startDate =
+      requested ||
+      (latest && latest.end_date >= DEMO_AS_OF_DATE ? addDays(latest.end_date, 1) : DEMO_AS_OF_DATE)
     const timestamp = nowIso(state.sequence)
     created = {
       id: nextId(state, 'membership'),
@@ -718,7 +724,8 @@ export function demoTransitionMembership(
       if (membership.status !== 'frozen') throw new Error('Only frozen memberships can be resumed')
       membership.status = 'active'
     } else {
-      if (['cancelled', 'expired'].includes(membership.status)) throw new Error('Membership is already closed')
+      if (['cancelled', 'expired'].includes(membership.status))
+        throw new Error('Membership is already closed')
       membership.status = 'cancelled'
     }
     membership.updated_at = nowIso(state.sequence)
@@ -751,7 +758,8 @@ export function demoListAttendance({
         .map(normalized)
         .join(' ')
         .includes(search)
-    const stateMatch = visitState === 'all' || (visitState === 'open' ? visit.is_open : !visit.is_open)
+    const stateMatch =
+      visitState === 'all' || (visitState === 'open' ? visit.is_open : !visit.is_open)
     const day = visit.checked_in_at.slice(0, 10)
     const fromMatch = !from || day >= from
     const toMatch = !to || day <= to
@@ -764,7 +772,8 @@ export function demoAttendanceAccess(memberId: string): AttendanceAccess {
   const state = loadState()
   const member = state.members.find((item) => item.id === memberId)
   if (!member) throw new Error('Demo member not found')
-  const openVisit = state.attendance.find((visit) => visit.member_id === memberId && visit.is_open) ?? null
+  const openVisit =
+    state.attendance.find((visit) => visit.member_id === memberId && visit.is_open) ?? null
   const membership = currentCoverage(state, memberId)
   const eligible = member.is_active && Boolean(membership) && !openVisit
   const reason = !member.is_active
@@ -853,7 +862,8 @@ export function getInteractiveDemoDashboard(
     const date = addDays(DEMO_AS_OF_DATE, index - (trendDays - 1))
     return {
       date,
-      checkins: state.attendance.filter((visit) => visit.checked_in_at.slice(0, 10) === date).length,
+      checkins: state.attendance.filter((visit) => visit.checked_in_at.slice(0, 10) === date)
+        .length,
     }
   })
 
@@ -897,7 +907,8 @@ export function getInteractiveDemoDashboard(
       frozen: memberships.filter((membership) => membership.status === 'frozen').length,
       expired: memberships.filter((membership) => membership.status === 'expired').length,
       cancelled: memberships.filter((membership) => membership.status === 'cancelled').length,
-      renewals: memberships.filter((membership) => membership.renewed_from_membership_id !== null).length,
+      renewals: memberships.filter((membership) => membership.renewed_from_membership_id !== null)
+        .length,
     },
     attendance: {
       open_visits: state.attendance.filter((visit) => visit.is_open).length,
@@ -918,7 +929,9 @@ export function getInteractiveDemoDashboard(
     })),
     attendance_trend: attendanceTrend,
     plan_distribution: [...distribution.values()]
-      .sort((left, right) => right.count - left.count || left.plan.code.localeCompare(right.plan.code))
+      .sort(
+        (left, right) => right.count - left.count || left.plan.code.localeCompare(right.plan.code),
+      )
       .map(({ plan, count }) => ({
         plan_id: plan.id,
         plan_code: plan.code,
@@ -930,7 +943,9 @@ export function getInteractiveDemoDashboard(
 
 export function getDemoPlanMemberCount(planId: string) {
   return loadState().memberships.filter(
-    (membership) => membership.plan_id === planId && ['active', 'scheduled', 'frozen'].includes(membership.status),
+    (membership) =>
+      membership.plan_id === planId &&
+      ['active', 'scheduled', 'frozen'].includes(membership.status),
   ).length
 }
 
