@@ -1,6 +1,6 @@
 # Gym Membership Management System
 
-Group 11 Software Engineering project. This repository is currently in **Phase 3A — Repository Foundation & Project Initialization**.
+Group 11 Software Engineering project. **Phase 3A — Repository Foundation & Project Initialization is complete and verified on `main`. Phase 3B — Database Foundation has not started.**
 
 ## Architecture baseline
 
@@ -11,7 +11,7 @@ Group 11 Software Engineering project. This repository is currently in **Phase 3
 - Deployment shape: single-origin Dockerized application
 - Local development timezone: `Asia/Kolkata`
 
-Phase 3A intentionally contains no gym business features. It only proves the engineering foundation: applications start, API health works, the frontend reaches the API, PostgreSQL connectivity is verified, quality checks run, Docker builds, and CI reproduces the checks.
+Phase 3A intentionally contains no gym business features. It proves the engineering foundation: applications start, API health works, the frontend reaches the API, PostgreSQL connectivity is verified, quality checks run, Docker builds, and CI reproduces the checks.
 
 ## Prerequisites
 
@@ -136,4 +136,4 @@ Use `main` plus short-lived branches such as `feat/*`, `fix/*`, `docs/*`, `test/
 
 ## Phase boundary
 
-The next phase after this foundation passes its exit gate is **Phase 3B — Database Foundation**. Business-feature implementation must not begin before its appropriate phase.
+The Phase 3A exit gate has passed. The next phase is **Phase 3B — Database Foundation**. Business-feature implementation must not begin before its appropriate phase.
