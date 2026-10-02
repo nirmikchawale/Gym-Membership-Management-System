@@ -19,6 +19,17 @@ type AuthState =
   | { kind: 'authenticated'; user: AuthUser }
   | { kind: 'error'; message: string }
 
+const publicPreviewUser: AuthUser = {
+  id: '00000000-0000-0000-0000-000000000000',
+  email: 'preview@gridstone.app',
+  full_name: 'Gridstone Preview',
+  role: 'staff',
+}
+
+function isVercelPublicPreview() {
+  return window.location.hostname.endsWith('.vercel.app')
+}
+
 function BootScreen() {
   return (
     <main id="main-content" className="boot-screen" aria-live="polite">
@@ -52,10 +63,17 @@ function SessionError({ message }: { message: string }) {
 function GridstoneApplication() {
   useScrollTide()
 
-  const [auth, setAuth] = useState<AuthState>({ kind: 'loading' })
-  const [health, setHealth] = useState<HealthState>({ kind: 'loading' })
+  const publicPreview = isVercelPublicPreview()
+  const [auth, setAuth] = useState<AuthState>(
+    publicPreview ? { kind: 'authenticated', user: publicPreviewUser } : { kind: 'loading' },
+  )
+  const [health, setHealth] = useState<HealthState>(
+    publicPreview ? { kind: 'error' } : { kind: 'loading' },
+  )
 
   useEffect(() => {
+    if (publicPreview) return
+
     const controller = new AbortController()
 
     void getCurrentUser(controller.signal)
@@ -75,7 +93,7 @@ function GridstoneApplication() {
       })
 
     return () => controller.abort()
-  }, [])
+  }, [publicPreview])
 
   if (auth.kind === 'loading') return <BootScreen />
   if (auth.kind === 'error') return <SessionError message={auth.message} />
@@ -97,13 +115,23 @@ function GridstoneApplication() {
   }
 
   async function handleLogout() {
+    if (publicPreview) return
     await logout()
     setAuth({ kind: 'anonymous' })
   }
 
   return (
     <Routes>
-      <Route element={<WorkspaceShell user={auth.user} health={health} onLogout={handleLogout} />}>
+      <Route
+        element={
+          <WorkspaceShell
+            user={auth.user}
+            health={health}
+            onLogout={handleLogout}
+            publicPreview={publicPreview}
+          />
+        }
+      >
         <Route index element={<HomePage user={auth.user} health={health} />} />
         <Route path="dashboard" element={<Navigate to="/" replace />} />
         {moduleDefinitions.map((module) => (

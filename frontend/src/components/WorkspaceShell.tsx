@@ -16,7 +16,8 @@ function initials(name: string) {
     .join('')
 }
 
-function healthLabel(health: HealthState) {
+function healthLabel(health: HealthState, publicPreview: boolean) {
+  if (publicPreview) return 'Public preview'
   if (health.kind === 'loaded') return 'Systems online'
   if (health.kind === 'error') return 'Health unavailable'
   return 'Checking systems'
@@ -26,10 +27,12 @@ export function WorkspaceShell({
   user,
   health,
   onLogout,
+  publicPreview = false,
 }: {
   user: AuthUser
   health: HealthState
   onLogout: () => Promise<void>
+  publicPreview?: boolean
 }) {
   const location = useLocation()
   const [mobileNavOpen, setMobileNavOpen] = useState(false)
@@ -66,6 +69,8 @@ export function WorkspaceShell({
     }
   }
 
+  const systemLabel = healthLabel(health, publicPreview)
+
   return (
     <div className="workspace-shell">
       <div className="ambient-layer ambient-layer--workspace" aria-hidden="true">
@@ -100,7 +105,7 @@ export function WorkspaceShell({
 
         <div className="workspace-chip">
           <span className="workspace-chip__dot" aria-hidden="true" />
-          <span>Operations workspace</span>
+          <span>{publicPreview ? 'Public design preview' : 'Operations workspace'}</span>
         </div>
 
         <nav className="nav-list">
@@ -127,14 +132,20 @@ export function WorkspaceShell({
             </div>
             <div>
               <p>Gridstone core</p>
-              <span>{healthLabel(health)}</span>
+              <span>{systemLabel}</span>
             </div>
             <span
-              className={`system-card__pulse system-card__pulse--${health.kind}`}
+              className={`system-card__pulse system-card__pulse--${
+                publicPreview ? 'loading' : health.kind
+              }`}
               aria-hidden="true"
             />
           </div>
-          <p className="sidebar__caption">Asia/Kolkata · Secure staff session</p>
+          <p className="sidebar__caption">
+            {publicPreview
+              ? 'Phase 3D · Public Vercel preview'
+              : 'Asia/Kolkata · Secure staff session'}
+          </p>
         </div>
       </aside>
 
@@ -151,22 +162,26 @@ export function WorkspaceShell({
             </button>
             <div>
               <p className="topbar__eyebrow">Gridstone / {currentItem.label}</p>
-              <p className="topbar__title">Operations workspace</p>
+              <p className="topbar__title">
+                {publicPreview ? 'Public design preview' : 'Operations workspace'}
+              </p>
             </div>
           </div>
 
           <div className="topbar__actions">
             <Badge
               tone={
-                health.kind === 'loaded'
-                  ? 'success'
-                  : health.kind === 'error'
-                    ? 'danger'
-                    : 'neutral'
+                publicPreview
+                  ? 'accent'
+                  : health.kind === 'loaded'
+                    ? 'success'
+                    : health.kind === 'error'
+                      ? 'danger'
+                      : 'neutral'
               }
             >
               <span className="badge__dot" aria-hidden="true" />
-              {healthLabel(health)}
+              {systemLabel}
             </Badge>
 
             <div className="user-chip">
@@ -177,20 +192,22 @@ export function WorkspaceShell({
                 <strong>{user.full_name}</strong>
                 <small>
                   <ShieldCheck size={12} aria-hidden="true" />
-                  {user.role}
+                  {publicPreview ? 'preview' : user.role}
                 </small>
               </span>
             </div>
 
-            <Button
-              variant="ghost"
-              className="topbar__logout"
-              type="button"
-              icon={<LogOut size={16} aria-hidden="true" />}
-              onClick={handleLogout}
-            >
-              Sign out
-            </Button>
+            {!publicPreview && (
+              <Button
+                variant="ghost"
+                className="topbar__logout"
+                type="button"
+                icon={<LogOut size={16} aria-hidden="true" />}
+                onClick={handleLogout}
+              >
+                Sign out
+              </Button>
+            )}
           </div>
         </header>
 
