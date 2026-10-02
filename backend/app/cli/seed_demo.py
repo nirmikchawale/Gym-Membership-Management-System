@@ -163,9 +163,7 @@ def seed_demo(
                 checked_in_at = local_check_in.astimezone(UTC)
                 is_open = index <= 4 and membership.status == "active" and member.is_active
                 checked_out_at = (
-                    None
-                    if is_open
-                    else checked_in_at + timedelta(minutes=45 + index % 75)
+                    None if is_open else checked_in_at + timedelta(minutes=45 + index % 75)
                 )
                 db.add(
                     Attendance(
