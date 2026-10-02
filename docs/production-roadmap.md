@@ -2,17 +2,17 @@
 
 ## Objective
 
-Turn the verified Gridstone engineering foundation into a complete gym-operations product and publish the **real authenticated FastAPI + PostgreSQL application**, not only a static/read-only preview.
+Publish the real authenticated FastAPI + PostgreSQL Gridstone application as a complete gym-operations product, preserving the verified single-origin Docker architecture.
 
 ## Scope decision
 
 **Phase 4C Payments & Receipts is intentionally removed from this project scope.** Payment capture, payment status workflows, receipts, revenue analytics, card data, UPI credentials, banking credentials and payment-provider integration are not required for the current academic/MVP production target.
 
-The approved completion path is:
+The approved completion path is now complete:
 
-**Phase 4B ✅ → Phase 4C omitted → Phase 4D ✅ → Phase 4E ✅ → Phase 4F ✅ → Phase 4G → Phase 4H.**
+**Phase 4A ✅ → Phase 4B ✅ → Phase 4C omitted → Phase 4D ✅ → Phase 4E ✅ → Phase 4F ✅ → Phase 4G ✅ → Phase 4H ✅.**
 
-The phase number 4C is retained only as an explicit documented omission so historical references do not become ambiguous.
+The phase number 4C is retained only as an explicit documented omission so historical references remain unambiguous.
 
 ## Execution contract
 
@@ -32,20 +32,7 @@ Delivered assignment from active member + active plan, price/currency snapshots,
 
 **Status: COMPLETE + VERIFIED.**
 
-Delivered:
-
-- front-desk member lookup;
-- access validation against current member/membership state;
-- check-in and check-out;
-- one-open-visit-per-member enforcement;
-- attendance linkage to the membership that authorized access;
-- open-visit/current-occupancy visibility;
-- attendance history, search and date filters;
-- inactive/scheduled/frozen/expired/cancelled access handling;
-- responsive front-desk workflow;
-- duplicate/race-condition protection and tests.
-
-**Exit gate passed:** a staff user can identify a member, validate access, check them in/out and review attendance history.
+Delivered front-desk member lookup, access validation, check-in/out, one-open-visit protection, membership-linked attendance, occupancy visibility, history/search/date filters, invalid-access handling, responsive front-desk workflow and duplicate/race-condition protection.
 
 ## Phase 4C — Intentionally out of scope
 
@@ -57,113 +44,92 @@ No implementation. Payments, receipts, revenue analytics and payment-provider in
 
 **Status: COMPLETE + VERIFIED.**
 
-Delivered operational reporting only from implemented persisted application data:
-
-- active/inactive member counts;
-- active/scheduled/frozen/expired/cancelled membership counts;
-- memberships expiring soon;
-- lifecycle/renewal summary;
-- open visits and attendance trends;
-- plan distribution;
-- bounded reporting windows and filters;
-- loading/empty/error states;
-- dashboard/reporting reconciliation tests.
+Delivered persisted operational reporting for member counts, membership lifecycle states, upcoming expiries, renewal summaries, open visits, attendance trends, plan distribution and bounded reporting windows. Dashboard values are reconciled against source records and tests.
 
 **No payment/revenue metrics are included.**
-
-**Exit gate passed:** dashboard numbers reconcile against source records and tests.
 
 ## Phase 4E — Demo/Seed & Operational Administration
 
 **Status: COMPLETE + VERIFIED.**
 
-Delivered:
-
-- deterministic synthetic seed command for development/test/staging;
-- production guard that blocks seed execution;
-- repeatable first-admin provisioning;
-- production-safe environment validation;
-- data-retention/deactivation guidance;
-- PostgreSQL backup/restore procedure;
-- disposable-database restore rehearsal in CI;
-- release checklist;
-- migration reversibility and deep-link/container verification.
+Delivered deterministic synthetic non-production seed tooling, production seed guards, repeatable administrator provisioning, production environment validation, data-retention guidance, portable PostgreSQL backup/restore procedures, disposable restore rehearsal in CI, release checklist, migration reversibility and deep-link/container verification.
 
 ## Phase 4F — Cross-Feature Hardening
 
 **Status: COMPLETE + VERIFIED.**
 
-Verified on authoritative `main` commit:
+Verified cross-feature workflow coverage, admin/staff authorization matrix, CSRF/session/expiry behavior, duplicate/conflict protection, SQL wildcard/input boundaries, dependency audits, mobile navigation/focus handling, browser security headers, CSP/isolation controls, request IDs, production-safe 500 responses, sanitized logging, operational indexes and exact-main CI.
 
-`fca1b9f8489168fa0c045821b87c8c26964d2f2c`
-
-Delivered:
-
-- end-to-end workflow coverage across Members → Plans → Memberships/Renewals → Attendance;
-- admin/staff authorization-matrix tests;
-- CSRF/session/expiry coverage;
-- duplicate/idempotency/conflict regression coverage;
-- SQL wildcard and input-boundary tests;
-- dependency audits;
-- mobile navigation focus/keyboard regression coverage;
-- responsive design foundations retained across completed slices;
-- browser security headers and API `no-store` verification;
-- CSP tightening and browser isolation headers;
-- per-request identifiers;
-- generic production-safe 500 responses;
-- sanitized structured HTTP request logging without secret/query-string leakage;
-- operational index verification;
-- exact-main CI verification after merge.
-
-Phase 4F exact-main CI run #109 completed successfully.
+Authoritative historical Phase 4F main SHA: `fca1b9f8489168fa0c045821b87c8c26964d2f2c`.
 
 ## Phase 4G — Production Infrastructure
 
-**Status: NEXT ACTIVE PHASE.**
+**Status: COMPLETE + VERIFIED.**
 
-Preferred deployment shape: preserve the verified single-origin Docker architecture.
+Production infrastructure is live on Railway:
 
-Required work:
-
-- managed PostgreSQL production database;
+- managed PostgreSQL 18 service;
+- persistent PostgreSQL volume;
 - production application service built from the repository Dockerfile;
-- public HTTPS endpoint/domain;
-- production `DATABASE_URL` and secrets stored only in provider secret storage;
-- `APP_ENV=production` and secure `__Host-` cookies;
-- controlled Alembic migration step;
-- secure one-time initial administrator provisioning;
-- health check and restart policy;
-- database backup/recovery configuration;
-- staging/candidate validation where provider capabilities allow;
-- production logs/metrics/error visibility;
-- retained last-known-good deployment for rollback;
-- documented provider-specific rollback procedure.
+- single-origin React + FastAPI deployment;
+- public HTTPS endpoint `https://gridstone-app-production.up.railway.app`;
+- provider-held production configuration and database credentials;
+- `APP_ENV=production` and secure production cookie configuration;
+- controlled Alembic migration + environment validation before releases;
+- `/api/v1/health` provider health check;
+- explicit restart-on-failure policy;
+- retained rollback-capable healthy application deployments;
+- CI-tested portable PostgreSQL backup/restore procedure.
 
-The Vercel site may remain useful for the read-only frontend preview. The final product is not production-complete until the authenticated backend and PostgreSQL are live.
+### Native backup entitlement limitation
+
+The current Railway Hobby workspace reports `maxBackupsCount=0`, so **native Railway volume backup schedules cannot be enabled on this plan**. Earlier Phase 4G notes that claimed daily/weekly native schedules were enabled are superseded by the provider inspection performed during Phase 4H.
+
+Current recovery posture therefore consists of persistent PostgreSQL storage, portable `pg_dump`/`pg_restore` procedures, automated disposable backup/restore rehearsal in CI, migration reversibility checks and rollback-capable application deployments. Enabling provider-native scheduled snapshots requires a Railway plan that supports volume backups or a separately approved external backup target.
+
+Authoritative Phase 4G main SHA: `66690638884adb5098a9f7e559d8fffe57cc8c52`.
 
 ## Phase 4H — Production Release & Verification
 
-**Status: PENDING PHASE 4G.**
+**Status: COMPLETE + VERIFIED.**
 
-Required work:
+Functional release candidate and persistence verification were completed on exact green main SHA:
 
-- deploy exact green `main` SHA;
-- migrate the production database;
-- provision administrator securely;
-- verify login/logout and CSRF;
-- smoke-test Members, Plans, Memberships/Renewals, Attendance and Dashboard/Reporting on the public HTTPS URL;
-- verify mobile and desktop layouts;
-- verify light/dark themes;
-- verify direct deep links;
-- verify database persistence across restart/redeploy;
-- verify backup and rollback runbook;
-- record release URL and deployed SHA;
-- only then use status `DEPLOYED → VERIFIED`.
+`8de3f7f336d3b96225cef6670c59a794a66baad5`
 
-## Definition of production-ready Gridstone
+Production URL:
+
+`https://gridstone-app-production.up.railway.app`
+
+Verification evidence includes:
+
+- exact-main GitHub CI run #125 passed frontend, backend, security and container/deep-link integration jobs;
+- exact SHA built and deployed successfully on Railway;
+- production migrations and environment validation passed;
+- provider health probe returned HTTP 200;
+- release-only administrator bootstrap secret was held at the provider and then removed;
+- login and authenticated `/me` passed;
+- missing and invalid CSRF tokens were rejected;
+- valid CSRF-protected mutations passed;
+- synthetic release-verification member and plan creation passed;
+- membership assignment and renewal lineage passed;
+- access validation, attendance check-in and check-out passed;
+- membership/attendance histories passed;
+- dashboard/reporting reconciliation passed;
+- logout and session invalidation passed;
+- the same release-verification records were re-read successfully after a clean same-SHA redeploy, proving persistence;
+- final permanent deployment uses the normal migration + production-environment-validation pre-deploy path and contains no bootstrap password variable.
+
+Final permanent Railway deployment for SHA `8de3f7f3…`: `de15c615-28ad-436c-92aa-7f053687d7ba`.
+
+### Browser acceptance evidence boundary
+
+The repository verifies responsive desktop/mobile behavior, light/dark theming, SPA deep links and route integration through frontend tests/builds and container integration. The automation environment used for Phase 4H could not independently reach the public Railway domain through its external browser/DNS tooling, so no fabricated claim of exported live-browser screenshots is made. The provider-side application health and full authenticated API workflow are independently verified.
+
+## Definition of production-ready Gridstone — achieved
 
 A gym operator can sign in and complete the approved daily loop:
 
-**create member → choose plan → assign membership → renew → validate access → check in/out → review operational dashboard/reporting**, with persistent PostgreSQL data, server-side authorization, tested error states, responsive UI and an HTTPS production deployment tied to an exact verified Git commit.
+**create member → choose plan → assign membership → renew → validate access → check in/out → review operational dashboard/reporting**, with persistent PostgreSQL data, server-side authorization, tested error/security states, responsive UI and an HTTPS production deployment tied to an exact verified Git commit.
 
-Payments are not part of that approved loop.
+Payments remain outside the approved loop.
