@@ -1,0 +1,50 @@
+name: Normalize Phase 4B Gate Fixes Once
+
+on:
+  push:
+    branches: [feat/phase-4b-attendance]
+
+permissions:
+  contents: write
+
+jobs:
+  normalize:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: feat/phase-4b-attendance
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.18.3
+          run_install: false
+      - name: Install frontend dependencies
+        working-directory: frontend
+        run: pnpm install --frozen-lockfile
+      - name: Format frontend test
+        working-directory: frontend
+        run: pnpm exec prettier --write src/App.test.tsx
+      - uses: astral-sh/setup-uv@v6
+        with:
+          version: '0.10.0'
+          python-version: '3.14'
+      - name: Install backend dependencies
+        run: uv sync --project backend --frozen --group dev
+      - name: Normalize backend lint and format
+        run: |
+          uv run --project backend ruff check --fix backend/app/services/attendance.py backend/alembic/versions/20261002_0003_attendance_membership_link.py
+          uv run --project backend ruff format backend/app/services/attendance.py backend/alembic/versions/20261002_0003_attendance_membership_link.py
+      - name: Commit normalization
+        run: |
+          if git diff --quiet; then
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add frontend/src/App.test.tsx backend/app/services/attendance.py backend/alembic/versions/20261002_0003_attendance_membership_link.py
+          git commit -m "style: normalize Phase 4B gate fixes"
+          git push origin HEAD:feat/phase-4b-attendance
