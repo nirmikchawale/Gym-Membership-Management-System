@@ -3,9 +3,12 @@ import { useEffect } from 'react'
 export function useScrollTide() {
   useEffect(() => {
     const root = document.documentElement
-    const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)')
+    const reducedMotion =
+      typeof window.matchMedia === 'function'
+        ? window.matchMedia('(prefers-reduced-motion: reduce)').matches
+        : false
 
-    if (reducedMotion.matches) {
+    if (reducedMotion) {
       root.style.setProperty('--tide-y', '0px')
       root.style.setProperty('--tide-y-inverse', '0px')
       return
