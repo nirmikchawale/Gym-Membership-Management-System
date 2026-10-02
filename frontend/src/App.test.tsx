@@ -55,6 +55,9 @@ function mockFetch(authenticated: boolean) {
             : jsonResponse({ detail: 'Authentication required' }, 401),
         )
       }
+      if (url.includes('/api/v1/attendance')) {
+        return Promise.resolve(jsonResponse({ items: [], total: 0, limit: 20, offset: 0 }))
+      }
       if (url.includes('/api/v1/members')) {
         return Promise.resolve(
           jsonResponse({ items: [memberRecord], total: 1, limit: 20, offset: 0 }),
@@ -133,14 +136,15 @@ describe('App', () => {
     expect(screen.getByText(/Historical pricing stays historical/i)).toBeVisible()
   })
 
-  it('keeps later slices explicitly outside the current phase', async () => {
+  it('supports the completed Attendance Operations slice', async () => {
     window.history.replaceState({}, '', '/attendance')
     mockFetch(true)
     render(<App />)
 
-    expect(await screen.findByRole('heading', { name: 'Attendance', level: 1 })).toBeVisible()
-    expect(screen.getByText(/Later approved slice/i)).toBeVisible()
-    expect(screen.queryByText(/Feature slice not started/i)).not.toBeInTheDocument()
+    expect(await screen.findByRole('heading', { name: 'Attendance & Access', level: 1 })).toBeVisible()
+    expect(screen.getByText(/Find the member before opening the gate/i)).toBeVisible()
+    expect(screen.getByPlaceholderText(/Member code, name, phone or email/i)).toBeVisible()
+    expect(screen.getByText(/No attendance visits match these filters/i)).toBeVisible()
   })
 
   it('persists explicit light and dark theme selection', async () => {
