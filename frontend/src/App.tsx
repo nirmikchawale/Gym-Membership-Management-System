@@ -16,6 +16,7 @@ import { MembershipsPage } from './pages/MembershipsPage'
 import { ModulePage } from './pages/ModulePage'
 import { NotFoundPage } from './pages/NotFoundPage'
 import { PlansPage } from './pages/PlansPage'
+import { ReportsPage } from './pages/ReportsPage'
 
 type AuthState =
   | { kind: 'loading' }
@@ -43,7 +44,7 @@ function BootScreen() {
         <span />
         <span />
       </div>
-      <p>Opening your workspace…</p>
+      <p>Opening your workspace...</p>
     </main>
   )
 }
@@ -55,7 +56,7 @@ function SessionError({ message }: { message: string }) {
         <AlertTriangle size={24} />
       </span>
       <p className="page-eyebrow">Gridstone session</p>
-      <h1>We couldn’t verify your workspace.</h1>
+      <h1>We could not verify your workspace.</h1>
       <p>{message}</p>
       <Button type="button" onClick={() => window.location.reload()}>
         Try again
@@ -119,7 +120,8 @@ function GridstoneApplication() {
   }
 
   const laterModules = moduleDefinitions.filter(
-    (module) => !['/members', '/plans', '/memberships', '/attendance'].includes(module.path),
+    (module) =>
+      !['/members', '/plans', '/memberships', '/attendance', '/reports'].includes(module.path),
   )
 
   return (
@@ -134,7 +136,10 @@ function GridstoneApplication() {
           />
         }
       >
-        <Route index element={<HomePage user={auth.user} health={health} />} />
+        <Route
+          index
+          element={<HomePage user={auth.user} health={health} publicPreview={publicPreview} />}
+        />
         <Route path="dashboard" element={<Navigate to="/" replace />} />
         <Route path="members" element={<MembersPage publicPreview={publicPreview} />} />
         <Route
@@ -143,6 +148,7 @@ function GridstoneApplication() {
         />
         <Route path="memberships" element={<MembershipsPage publicPreview={publicPreview} />} />
         <Route path="attendance" element={<AttendancePage publicPreview={publicPreview} />} />
+        <Route path="reports" element={<ReportsPage publicPreview={publicPreview} />} />
         {laterModules.map((module) => (
           <Route
             key={module.path}

@@ -43,6 +43,52 @@ const planRecord = {
   updated_at: '2026-09-01T00:00:00Z',
 }
 
+const dashboardRecord = {
+  as_of: '2026-10-02',
+  trend_days: 7,
+  expiring_within_days: 30,
+  members: { total: 12, active: 10, inactive: 2 },
+  memberships: {
+    total: 14,
+    scheduled: 1,
+    active: 8,
+    frozen: 1,
+    expired: 3,
+    cancelled: 1,
+    renewals: 2,
+  },
+  attendance: { open_visits: 3, today_checkins: 7, period_checkins: 26 },
+  expiring_soon: [
+    {
+      membership_id: '00000000-0000-0000-0000-000000000311',
+      member_id: memberRecord.id,
+      member_code: memberRecord.member_code,
+      member_name: 'Aarav Mehta',
+      plan_code: planRecord.code,
+      plan_name: planRecord.name,
+      end_date: '2026-10-12',
+      days_remaining: 10,
+    },
+  ],
+  attendance_trend: [
+    { date: '2026-09-26', checkins: 2 },
+    { date: '2026-09-27', checkins: 3 },
+    { date: '2026-09-28', checkins: 4 },
+    { date: '2026-09-29', checkins: 5 },
+    { date: '2026-09-30', checkins: 3 },
+    { date: '2026-10-01', checkins: 2 },
+    { date: '2026-10-02', checkins: 7 },
+  ],
+  plan_distribution: [
+    {
+      plan_id: planRecord.id,
+      plan_code: planRecord.code,
+      plan_name: planRecord.name,
+      memberships: 6,
+    },
+  ],
+}
+
 function mockFetch(authenticated: boolean) {
   vi.stubGlobal(
     'fetch',
@@ -53,6 +99,22 @@ function mockFetch(authenticated: boolean) {
           authenticated
             ? jsonResponse(authenticatedUser)
             : jsonResponse({ detail: 'Authentication required' }, 401),
+        )
+      }
+      if (url.includes('/api/v1/dashboard')) {
+        const params = new URL(url, 'https://gridstone.test').searchParams
+        const trendDays = Number(params.get('trend_days') ?? 7)
+        const expiringDays = Number(params.get('expiring_days') ?? 30)
+        return Promise.resolve(
+          jsonResponse({
+            ...dashboardRecord,
+            trend_days: trendDays,
+            expiring_within_days: expiringDays,
+            attendance_trend: Array.from({ length: trendDays }, (_, index) => ({
+              date: `2026-09-${String(index + 1).padStart(2, '0')}`,
+              checkins: index % 4,
+            })),
+          }),
         )
       }
       if (url.includes('/api/v1/attendance')) {
@@ -100,17 +162,17 @@ describe('App', () => {
     expect(await screen.findByText(/API \+ PostgreSQL online/i)).toBeVisible()
   })
 
-  it('shows the Gridstone workspace for an authenticated session', async () => {
+  it('shows reconciled operational dashboard data for an authenticated session', async () => {
     mockFetch(true)
     render(<App />)
 
-    expect(
-      await screen.findByRole('heading', { name: /the front desk, without the friction/i }),
-    ).toBeVisible()
+    expect(await screen.findByRole('heading', { name: /today at gridstone/i })).toBeVisible()
+    expect(await screen.findByText(/2 inactive · 12 total/i)).toBeVisible()
+    expect(screen.getByText(/Active members/i)).toBeVisible()
+    expect(screen.getByText(/26 in last 7 days/i)).toBeVisible()
     expect(screen.getAllByText(/Gridstone Admin/i)).toHaveLength(2)
-    expect(screen.getByRole('link', { name: /^members$/i })).toBeVisible()
-    expect(screen.getByRole('link', { name: /^plans$/i })).toBeVisible()
-    expect(screen.getByRole('button', { name: /sign out/i })).toBeVisible()
+    expect(screen.getByRole('link', { name: /^reports$/i })).toBeVisible()
+    expect(screen.queryByRole('link', { name: /^payments$/i })).not.toBeInTheDocument()
   })
 
   it('supports the completed Members vertical slice', async () => {
@@ -149,10 +211,22 @@ describe('App', () => {
     expect(await screen.findByText(/No attendance visits match these filters/i)).toBeVisible()
   })
 
+  it('supports bounded operational reporting controls', async () => {
+    window.history.replaceState({}, '', '/reports')
+    mockFetch(true)
+    render(<App />)
+
+    expect(await screen.findByRole('heading', { name: 'Reports', level: 1 })).toBeVisible()
+    const attendanceRange = screen.getByLabelText(/Attendance trend/i)
+    fireEvent.change(attendanceRange, { target: { value: '14' } })
+    expect(await screen.findByText(/Last 14 days/i)).toBeVisible()
+    expect(screen.getByText(/Payments excluded/i)).toBeVisible()
+  })
+
   it('persists explicit light and dark theme selection', async () => {
     mockFetch(true)
     render(<App />)
-    await screen.findByRole('heading', { name: /the front desk, without the friction/i })
+    await screen.findByRole('heading', { name: /today at gridstone/i })
 
     const toggle = screen.getByRole('button', { name: /switch to light mode/i })
     fireEvent.click(toggle)

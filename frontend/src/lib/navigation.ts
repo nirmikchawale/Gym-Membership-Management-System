@@ -3,7 +3,6 @@ import {
   BadgeCheck,
   BarChart3,
   ClipboardList,
-  CreditCard,
   LayoutDashboard,
   Users,
   type LucideIcon,
@@ -76,24 +75,19 @@ export const moduleDefinitions: ModuleDefinition[] = [
     capabilities: ['Check in', 'Check out', 'Open visits', 'Attendance history'],
   },
   {
-    label: 'Payments',
-    path: '/payments',
-    icon: CreditCard,
-    eyebrow: 'Transaction record',
-    title: 'Payments',
-    description:
-      'A staff-safe ledger for payment metadata, status, method and references without storing payment secrets.',
-    capabilities: ['Record payments', 'Method and status', 'Reference tracking', 'Payment history'],
-  },
-  {
     label: 'Reports',
     path: '/reports',
     icon: BarChart3,
     eyebrow: 'Operational insight',
     title: 'Reports',
     description:
-      'A future reporting surface for meaningful attendance, membership and revenue signals once workflows are live.',
-    capabilities: ['Date filters', 'Membership trends', 'Attendance patterns', 'Revenue summaries'],
+      'Operational membership and attendance signals derived from the same persisted records used at the front desk.',
+    capabilities: [
+      'Membership lifecycle',
+      'Expiry queue',
+      'Attendance patterns',
+      'Plan distribution',
+    ],
   },
 ]
 
