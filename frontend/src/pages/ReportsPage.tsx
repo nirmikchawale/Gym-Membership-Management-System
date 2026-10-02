@@ -46,8 +46,8 @@ export function ReportsPage({ publicPreview }: { publicPreview: boolean }) {
             same operational records as the front-desk workflows.
           </p>
         </div>
-        <Badge tone={publicPreview ? 'accent' : 'neutral'}>
-          {publicPreview ? 'Interactive synthetic data' : 'Payments excluded'}
+        <Badge tone={publicPreview ? 'accent' : 'success'}>
+          {publicPreview ? 'Interactive synthetic data' : 'Live operational data'}
         </Badge>
       </header>
 
