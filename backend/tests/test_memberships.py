@@ -30,7 +30,10 @@ def _login() -> TestClient:
         )
         db.commit()
     client = TestClient(app)
-    assert client.post("/api/v1/auth/login", json={"email": email, "password": password}).status_code == 200
+    assert (
+        client.post("/api/v1/auth/login", json={"email": email, "password": password}).status_code
+        == 200
+    )
     return client
 
 
@@ -90,12 +93,16 @@ def test_membership_rejects_inactive_member_and_plan() -> None:
     client = _login()
     headers = _csrf(client)
     member_id, plan_id = _member_and_plan(member_active=False)
-    response = client.post("/api/v1/memberships", json={"member_id": member_id, "plan_id": plan_id}, headers=headers)
+    response = client.post(
+        "/api/v1/memberships", json={"member_id": member_id, "plan_id": plan_id}, headers=headers
+    )
     assert response.status_code == 422
     assert "Inactive members" in response.json()["detail"]
 
     member_id, plan_id = _member_and_plan(plan_active=False)
-    response = client.post("/api/v1/memberships", json={"member_id": member_id, "plan_id": plan_id}, headers=headers)
+    response = client.post(
+        "/api/v1/memberships", json={"member_id": member_id, "plan_id": plan_id}, headers=headers
+    )
     assert response.status_code == 422
     assert "Inactive plans" in response.json()["detail"]
 
@@ -104,10 +111,14 @@ def test_overlap_search_filters_and_wildcards() -> None:
     client = _login()
     headers = _csrf(client)
     member_id, plan_id = _member_and_plan()
-    created = client.post("/api/v1/memberships", json={"member_id": member_id, "plan_id": plan_id}, headers=headers)
+    created = client.post(
+        "/api/v1/memberships", json={"member_id": member_id, "plan_id": plan_id}, headers=headers
+    )
     assert created.status_code == 201
 
-    duplicate = client.post("/api/v1/memberships", json={"member_id": member_id, "plan_id": plan_id}, headers=headers)
+    duplicate = client.post(
+        "/api/v1/memberships", json={"member_id": member_id, "plan_id": plan_id}, headers=headers
+    )
     assert duplicate.status_code == 409
 
     code = created.json()["member_code"]
@@ -127,20 +138,28 @@ def test_renewal_lineage_and_single_child_rule() -> None:
     today = datetime.now(settings.timezone).date()
     source = client.post(
         "/api/v1/memberships",
-        json={"member_id": member_id, "plan_id": plan_id, "start_date": str(today - timedelta(days=29))},
+        json={
+            "member_id": member_id,
+            "plan_id": plan_id,
+            "start_date": str(today - timedelta(days=29)),
+        },
         headers=headers,
     )
     assert source.status_code == 201
     source_body = source.json()
 
-    renewed = client.post(f"/api/v1/memberships/{source_body['id']}/renew", json={}, headers=headers)
+    renewed = client.post(
+        f"/api/v1/memberships/{source_body['id']}/renew", json={}, headers=headers
+    )
     assert renewed.status_code == 201
     body = renewed.json()
     assert body["renewed_from_membership_id"] == source_body["id"]
     assert body["start_date"] > source_body["end_date"]
     assert body["price_amount"] == "2499.00"
 
-    duplicate = client.post(f"/api/v1/memberships/{source_body['id']}/renew", json={}, headers=headers)
+    duplicate = client.post(
+        f"/api/v1/memberships/{source_body['id']}/renew", json={}, headers=headers
+    )
     assert duplicate.status_code == 409
 
 
@@ -148,7 +167,9 @@ def test_freeze_resume_cancel_and_invalid_transitions() -> None:
     client = _login()
     headers = _csrf(client)
     member_id, plan_id = _member_and_plan()
-    created = client.post("/api/v1/memberships", json={"member_id": member_id, "plan_id": plan_id}, headers=headers)
+    created = client.post(
+        "/api/v1/memberships", json={"member_id": member_id, "plan_id": plan_id}, headers=headers
+    )
     membership_id = created.json()["id"]
 
     frozen = client.post(f"/api/v1/memberships/{membership_id}/freeze", headers=headers)

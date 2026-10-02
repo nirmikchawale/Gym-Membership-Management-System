@@ -124,7 +124,9 @@ def add_membership(
         raise _conflict(exc) from exc
 
 
-@router.post("/{membership_id}/renew", response_model=MembershipRead, status_code=status.HTTP_201_CREATED)
+@router.post(
+    "/{membership_id}/renew", response_model=MembershipRead, status_code=status.HTTP_201_CREATED
+)
 def renew(
     membership_id: UUID,
     request: Request,

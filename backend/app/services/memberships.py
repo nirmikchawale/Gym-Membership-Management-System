@@ -114,13 +114,16 @@ def list_memberships(
         .join(MembershipPlan, MembershipPlan.id == Membership.plan_id)
         .where(*filters)
     )
-    total = db.scalar(
-        select(func.count())
-        .select_from(Membership)
-        .join(Member, Member.id == Membership.member_id)
-        .join(MembershipPlan, MembershipPlan.id == Membership.plan_id)
-        .where(*filters)
-    ) or 0
+    total = (
+        db.scalar(
+            select(func.count())
+            .select_from(Membership)
+            .join(Member, Member.id == Membership.member_id)
+            .join(MembershipPlan, MembershipPlan.id == Membership.plan_id)
+            .where(*filters)
+        )
+        or 0
+    )
     rows = db.execute(
         joined.order_by(Membership.end_date.asc(), Membership.created_at.desc())
         .offset(offset)
@@ -129,7 +132,9 @@ def list_memberships(
     return rows, total
 
 
-def _validate_assignment(db: Session, member_id: UUID, plan_id: UUID) -> tuple[Member, MembershipPlan]:
+def _validate_assignment(
+    db: Session, member_id: UUID, plan_id: UUID
+) -> tuple[Member, MembershipPlan]:
     member = db.get(Member, member_id)
     if member is None:
         raise MembershipInputError("Member not found")
