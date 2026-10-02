@@ -42,11 +42,7 @@ def main() -> None:
 
         membership_ids = {item.id for item in memberships}
         renewal = next(
-            (
-                item
-                for item in memberships
-                if item.renewed_from_membership_id in membership_ids
-            ),
+            (item for item in memberships if item.renewed_from_membership_id in membership_ids),
             None,
         )
         if renewal is None:
