@@ -54,7 +54,7 @@ class PlanCreate(BaseModel):
     price: Decimal = Field(ge=Decimal("0"), le=_MAX_PRICE, max_digits=12, decimal_places=2)
     currency: str = Field(default="INR", min_length=3, max_length=3)
 
-    @field_validator("code")
+    @field_validator("code", mode="before")
     @classmethod
     def normalize_code(cls, value: str) -> str:
         normalized = _normalize_code(value)
@@ -62,7 +62,7 @@ class PlanCreate(BaseModel):
             raise ValueError("Plan code cannot be blank")
         return normalized
 
-    @field_validator("name")
+    @field_validator("name", mode="before")
     @classmethod
     def normalize_name(cls, value: str) -> str:
         normalized = _normalize_name(value)
@@ -70,12 +70,12 @@ class PlanCreate(BaseModel):
             raise ValueError("Plan name cannot be blank")
         return normalized
 
-    @field_validator("description")
+    @field_validator("description", mode="before")
     @classmethod
     def normalize_description(cls, value: str | None) -> str | None:
         return _normalize_description(value)
 
-    @field_validator("currency")
+    @field_validator("currency", mode="before")
     @classmethod
     def normalize_currency(cls, value: str) -> str:
         normalized = _normalize_currency(value)
@@ -94,22 +94,22 @@ class PlanUpdate(BaseModel):
     )
     currency: str | None = Field(default=None, min_length=3, max_length=3)
 
-    @field_validator("code")
+    @field_validator("code", mode="before")
     @classmethod
     def normalize_code(cls, value: str | None) -> str | None:
         return _normalize_code(value)
 
-    @field_validator("name")
+    @field_validator("name", mode="before")
     @classmethod
     def normalize_name(cls, value: str | None) -> str | None:
         return _normalize_name(value)
 
-    @field_validator("description")
+    @field_validator("description", mode="before")
     @classmethod
     def normalize_description(cls, value: str | None) -> str | None:
         return _normalize_description(value)
 
-    @field_validator("currency")
+    @field_validator("currency", mode="before")
     @classmethod
     def normalize_currency(cls, value: str | None) -> str | None:
         return _normalize_currency(value)
