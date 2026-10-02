@@ -135,12 +135,16 @@ export function WorkspaceShell({
               <span>{systemLabel}</span>
             </div>
             <span
-              className={`system-card__pulse system-card__pulse--${publicPreview ? 'loading' : health.kind}`}
+              className={`system-card__pulse system-card__pulse--${
+                publicPreview ? 'loading' : health.kind
+              }`}
               aria-hidden="true"
             />
           </div>
           <p className="sidebar__caption">
-            {publicPreview ? 'Phase 3D · Public Vercel preview' : 'Asia/Kolkata · Secure staff session'}
+            {publicPreview
+              ? 'Phase 3D · Public Vercel preview'
+              : 'Asia/Kolkata · Secure staff session'}
           </p>
         </div>
       </aside>
