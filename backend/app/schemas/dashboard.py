@@ -23,7 +23,7 @@ class DashboardMembershipCounts(BaseModel):
 class DashboardAttendanceCounts(BaseModel):
     open_visits: int
     today_checkins: int
-    last_7_days_checkins: int
+    period_checkins: int
 
 
 class DashboardExpiringMembership(BaseModel):
@@ -51,6 +51,8 @@ class DashboardPlanDistribution(BaseModel):
 
 class DashboardOverview(BaseModel):
     as_of: date
+    trend_days: int
+    expiring_within_days: int
     members: DashboardMemberCounts
     memberships: DashboardMembershipCounts
     attendance: DashboardAttendanceCounts
