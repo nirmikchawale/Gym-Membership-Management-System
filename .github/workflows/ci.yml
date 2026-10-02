@@ -26,7 +26,10 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
       - name: Formatting
-        run: pnpm format:check
+        run: |
+          pnpm exec prettier --write src/lib/demo-runtime.ts src/pages/MembershipsPage.tsx src/pages/MembersPage.tsx
+          git diff -- src/lib/demo-runtime.ts src/pages/MembershipsPage.tsx src/pages/MembersPage.tsx
+          exit 1
       - name: Lint
         run: pnpm lint
       - name: Typecheck
