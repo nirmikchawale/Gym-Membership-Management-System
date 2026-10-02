@@ -89,8 +89,10 @@ def seed_demo(
         plan_id = _stable_id("plan", code)
         plan = db.get(MembershipPlan, plan_id)
         if plan is None:
-            conflicting = db.scalar(select(MembershipPlan).where(MembershipPlan.code == code))
-            if conflicting is not None:
+            conflicting_plan = db.scalar(
+                select(MembershipPlan).where(MembershipPlan.code == code)
+            )
+            if conflicting_plan is not None:
                 raise RuntimeError(f"Reserved demo plan code {code} is already in use.")
             plan = MembershipPlan(
                 id=plan_id,
@@ -114,8 +116,8 @@ def seed_demo(
         member_id = _stable_id("member", code)
         member = db.get(Member, member_id)
         if member is None:
-            conflicting = db.scalar(select(Member).where(Member.member_code == code))
-            if conflicting is not None:
+            conflicting_member = db.scalar(select(Member).where(Member.member_code == code))
+            if conflicting_member is not None:
                 raise RuntimeError(f"Reserved demo member code {code} is already in use.")
             member = Member(
                 id=member_id,
