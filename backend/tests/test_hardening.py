@@ -1,6 +1,6 @@
 import logging
 from datetime import UTC, datetime, timedelta
-from uuid import uuid4
+from uuid import UUID, uuid4
 
 import pytest
 from fastapi.testclient import TestClient
@@ -10,6 +10,7 @@ from sqlalchemy.orm import Session
 from app.core.config import settings
 from app.core.security import hash_password
 from app.db.models.auth import AuthSession, AuthUser
+from app.db.models.member import Member
 from app.db.session import engine
 from app.main import app
 
@@ -43,6 +44,15 @@ def _csrf(client: TestClient) -> dict[str, str]:
     token = client.cookies.get(settings.csrf_cookie_name)
     assert token
     return {"X-CSRF-Token": token}
+
+
+def _delete_members(*member_ids: str) -> None:
+    with Session(engine) as db:
+        for member_id in member_ids:
+            member = db.get(Member, UUID(member_id))
+            if member is not None:
+                db.delete(member)
+        db.commit()
 
 
 def test_admin_staff_matrix_and_cross_feature_daily_loop() -> None:
@@ -201,14 +211,19 @@ def test_sql_wildcards_are_literal_and_list_boundaries_are_bounded() -> None:
     )
     assert plain_member.status_code == 201
 
-    wildcard = staff.get("/api/v1/members", params={"query": "%", "limit": 100})
-    assert wildcard.status_code == 200
-    ids = {item["id"] for item in wildcard.json()["items"]}
-    assert percent_member.json()["id"] in ids
-    assert plain_member.json()["id"] not in ids
+    percent_id = percent_member.json()["id"]
+    plain_id = plain_member.json()["id"]
+    try:
+        wildcard = staff.get("/api/v1/members", params={"query": "%", "limit": 100})
+        assert wildcard.status_code == 200
+        ids = {item["id"] for item in wildcard.json()["items"]}
+        assert percent_id in ids
+        assert plain_id not in ids
 
-    assert staff.get("/api/v1/members", params={"query": "x" * 121}).status_code == 422
-    assert staff.get("/api/v1/members", params={"limit": 101}).status_code == 422
+        assert staff.get("/api/v1/members", params={"query": "x" * 121}).status_code == 422
+        assert staff.get("/api/v1/members", params={"limit": 101}).status_code == 422
+    finally:
+        _delete_members(percent_id, plain_id)
 
 
 def test_operational_indexes_cover_membership_and_attendance_lists() -> None:
