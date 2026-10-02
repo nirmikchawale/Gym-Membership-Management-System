@@ -1,6 +1,6 @@
 # Gridstone
 
-Group 11 Software Engineering project. **Phases 3A — Repository Foundation & Project Initialization, 3B — Database Foundation, 3C — Authentication & Authorization, 3D — Design System & Product Shell, and the Members vertical product slice are complete and verified. The next vertical product slice is Membership Plans. Memberships/renewals, attendance, payments, dashboard and reporting remain later approved work.**
+Group 11 Software Engineering project. **Phases 3A — Repository Foundation & Project Initialization, 3B — Database Foundation, 3C — Authentication & Authorization, 3D — Design System & Product Shell, and the Members and Membership Plans vertical product slices are complete and verified. The next vertical product slice is Membership Lifecycle & Renewals. Attendance, payments, dashboard and reporting remain later approved work.**
 
 Gridstone is the product name for the Gym Membership Management System.
 
@@ -16,7 +16,7 @@ Gridstone is the product name for the Gym Membership Management System.
 - Deployment shape: single-origin Dockerized application
 - Local development timezone: `Asia/Kolkata`
 
-Phase 3B established persistence for members, membership plans, memberships/renewal lineage, attendance, and payments. Phase 3C added internal staff/admin authentication and authorization with CSRF-protected, database-backed sessions. Phase 3D established the responsive Gridstone product shell, design tokens, navigation, real routes/deep links and accessible motion. The verified Members slice adds the first real business workflow on that foundation.
+Phase 3B established persistence for members, membership plans, memberships/renewal lineage, attendance, and payments. Phase 3C added internal staff/admin authentication and authorization with CSRF-protected, database-backed sessions. Phase 3D established the responsive Gridstone product shell, design tokens, navigation, real routes/deep links and accessible motion. The verified Members and Membership Plans slices now provide the first real business workflows on that foundation.
 
 ## Current product scope
 
@@ -32,12 +32,24 @@ The authenticated Members workflow supports:
 - date validation and database uniqueness handling;
 - authenticated reads and CSRF-protected state changes.
 
+The authenticated Membership Plans workflow supports:
+
+- server-side search by plan code, name and description;
+- active/inactive filtering and bounded pagination;
+- plan detail;
+- administrator-only create and edit;
+- administrator-only deactivate/reactivate instead of destructive deletion;
+- normalized plan codes, names, descriptions and three-letter currency codes;
+- bounded duration and monetary validation plus duplicate-code handling;
+- staff read access with server-enforced administrator authorization for mutations;
+- historical membership price and currency snapshots that are not rewritten when plan pricing changes.
+
 Current routes:
 
 - `/` — workspace overview
 - `/members` — verified Members product slice
-- `/plans` — next approved slice
-- `/memberships` — later approved slice
+- `/plans` — verified Membership Plans product slice
+- `/memberships` — next approved slice: Membership Lifecycle & Renewals
 - `/attendance` — later approved slice
 - `/payments` — later approved slice
 - `/reports` — later approved slice
@@ -46,7 +58,7 @@ Later-module routes remain honest scope-boundary surfaces. They do not present u
 
 ## Public demo dataset
 
-The Vercel-facing public preview is intentionally read-only and uses a deterministic synthetic member dataset. It now contains **112 member records: the original 12 demo records plus exactly 100 additional generated entries**. The demo names, phone numbers and `example.com` addresses are fabricated and are not imported customer records.
+The Vercel-facing public preview is intentionally read-only and uses deterministic synthetic data. It contains **112 member records: the original 12 demo records plus exactly 100 additional generated entries**, together with the synthetic membership-plan catalog used by the Plans preview. The demo names, phone numbers and `example.com` addresses are fabricated and are not imported customer records.
 
 Public-preview mode is enabled only by the explicit build-time environment variable `VITE_PUBLIC_PREVIEW=true`. The authenticated Docker/FastAPI application does not infer preview mode from a hostname and continues to require a real staff session.
 
@@ -54,7 +66,7 @@ Public-preview mode is enabled only by the explicit build-time environment varia
 
 Gridstone supports user-selectable **light** and **dark** appearance modes across sign-in, the authenticated workspace and the public preview. An explicit choice is stored locally on the device; otherwise the application uses the operating-system color preference. Theme changes apply without a page reload.
 
-The responsive system keeps desktop and mobile first-class: member tables become touch-friendly cards on narrow screens, long names/contact details wrap safely, controls maintain touch-sized targets, and reduced-motion behavior remains supported.
+The responsive system keeps desktop and mobile first-class: Members and Membership Plans tables become touch-friendly card layouts on narrow screens, long names/contact details wrap safely, controls maintain touch-sized targets, and reduced-motion behavior remains supported.
 
 See [`docs/design-system.md`](docs/design-system.md) for the Phase 3D design contract and [`docs/members-theme-security-master-prompt.md`](docs/members-theme-security-master-prompt.md) for the Members/theme/security execution contract.
 
@@ -108,7 +120,7 @@ cd frontend
 pnpm dev
 ```
 
-Vite serves Gridstone on `http://localhost:5173` and proxies `/api/*` to `http://localhost:8000`. The application verifies the active staff session and API/PostgreSQL health at startup. In the single-origin image, FastAPI serves the built SPA and safely falls back to `index.html` for non-API deep links such as `/members`; unknown `/api/*` paths remain API 404s.
+Vite serves Gridstone on `http://localhost:5173` and proxies `/api/*` to `http://localhost:8000`. The application verifies the active staff session and API/PostgreSQL health at startup. In the single-origin image, FastAPI serves the built SPA and safely falls back to `index.html` for non-API deep links such as `/members` and `/plans`; unknown `/api/*` paths remain API 404s.
 
 Useful endpoints in development/test:
 
@@ -120,6 +132,9 @@ Useful endpoints in development/test:
 - Members: `GET/POST http://localhost:8000/api/v1/members`
 - Member detail/update: `GET/PATCH http://localhost:8000/api/v1/members/{id}`
 - Member status: `POST http://localhost:8000/api/v1/members/{id}/activate|deactivate`
+- Membership Plans: `GET/POST http://localhost:8000/api/v1/plans`
+- Plan detail/update: `GET/PATCH http://localhost:8000/api/v1/plans/{id}`
+- Plan availability: `POST http://localhost:8000/api/v1/plans/{id}/activate|deactivate`
 - OpenAPI JSON: `http://localhost:8000/api/openapi.json`
 - Swagger UI: `http://localhost:8000/api/docs`
 
@@ -135,6 +150,7 @@ Phase 3C implements internal `admin` and `staff` accounts only. There is no publ
 - Authenticated state-changing requests use session-bound CSRF validation.
 - Sessions expire after 8 hours by default and are explicitly revoked on logout.
 - Authorization is enforced server-side.
+- Membership Plan mutations require the `admin` role; authenticated staff retain read access.
 - API responses use `Cache-Control: no-store` plus browser security headers.
 - Production responses add HSTS.
 - Public preview mode must be explicitly enabled at build time; `*.vercel.app` no longer bypasses authentication automatically.
@@ -219,8 +235,8 @@ CI additionally exports the locked backend dependency set and runs `pip-audit` b
 │   └── src/
 │       ├── components/    Brand, UI primitives, theme toggle and workspace shell
 │       ├── lib/           API, demo dataset, theme, navigation and motion helpers
-│       ├── pages/         Overview, login, Members and later-slice surfaces
-│       └── styles/        Design tokens, themes, Members and responsive system
+│       ├── pages/         Overview, login, Members, Plans and later-slice surfaces
+│       └── styles/        Design tokens, themes, Members, Plans and responsive system
 ├── backend/
 │   ├── alembic/           Versioned database migrations
 │   ├── alembic.ini        Alembic configuration
@@ -228,9 +244,9 @@ CI additionally exports the locked backend dependency set and runs `pip-audit` b
 │   ├── app/core/          Settings and security helpers
 │   ├── app/db/models/     SQLAlchemy persistence models
 │   ├── app/schemas/       API validation/response schemas
-│   ├── app/services/      Authentication and member application services
+│   ├── app/services/      Authentication, member and plan application services
 │   ├── app/cli/           Administrative provisioning helpers
-│   └── tests/             Backend/database/auth/member/security tests
+│   └── tests/             Backend/database/auth/member/plan/security tests
 ├── data/                  Source-data boundary guidance
 ├── docs/                  Architecture, database, auth, design and workflow notes
 ├── scripts/               Developer verification helpers
@@ -248,4 +264,4 @@ Use `main` plus short-lived branches such as `feat/*`, `fix/*`, `docs/*`, `test/
 
 ## Phase boundary
 
-**Phase 3D — Design System & Product Shell and the Members vertical product slice are complete and verified. The next approved vertical slice is Membership Plans.** Memberships/renewals, attendance, payments, dashboard and reporting remain later work. The Vercel site is a public preview, not final production publication. Final production publication remains gated on the later approved product slices and final hardening.
+**Phase 3D — Design System & Product Shell and the Members and Membership Plans vertical product slices are complete and verified. The next approved vertical slice is Membership Lifecycle & Renewals.** Attendance, payments, dashboard and reporting remain later work. The Vercel site is a public preview, not final production publication. Final production publication remains gated on the later approved product slices and final hardening.
