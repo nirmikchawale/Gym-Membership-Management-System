@@ -1,6 +1,6 @@
 # Gym Membership Management System
 
-Group 11 Software Engineering project. **Phase 3A — Repository Foundation & Project Initialization is complete and verified on `main`. Phase 3B — Database Foundation is implemented with completion gated by CI and post-merge verification.**
+Group 11 Software Engineering project. **Phase 3A — Repository Foundation & Project Initialization and Phase 3B — Database Foundation are complete and verified on `main`. Phase 3C — Authentication & Authorization is next and has not started.**
 
 ## Architecture baseline
 
@@ -167,4 +167,4 @@ Use `main` plus short-lived branches such as `feat/*`, `fix/*`, `docs/*`, `test/
 
 ## Phase boundary
 
-Phase 3B is limited to database persistence, migrations, constraints/indexes, and verification. Business feature/API behavior begins only in its appropriate later phase.
+**Phase 3B is complete and verified.** Phase 3C — Authentication & Authorization is the next unstarted phase. Business feature/API behavior must continue to respect the project phase sequence.
