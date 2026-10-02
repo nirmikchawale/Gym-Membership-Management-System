@@ -13,8 +13,9 @@ from app.main import app
 def _login_staff() -> TestClient:
     marker = uuid4().hex
     password = "Gridstone-Member-Test-42!"
+    email = f"member-staff-{marker}@example.test"
     user = AuthUser(
-        email=f"member-staff-{marker}@example.test",
+        email=email,
         full_name="Member Test Staff",
         role="staff",
         is_active=True,
@@ -25,7 +26,7 @@ def _login_staff() -> TestClient:
         db.commit()
 
     client = TestClient(app)
-    response = client.post("/api/v1/auth/login", json={"email": user.email, "password": password})
+    response = client.post("/api/v1/auth/login", json={"email": email, "password": password})
     assert response.status_code == 200
     return client
 
