@@ -56,8 +56,8 @@ export function LoginPage({
           <p className="kicker">Gym operations, rebuilt</p>
           <h1 id="gridstone-login-title">Run the floor. Keep the business moving.</h1>
           <p className="login-lede">
-            One secure workspace for member operations today, with the remaining gym workflows
-            delivered as later approved product slices.
+            One secure workspace for members, plans, memberships and renewals, attendance, and
+            operational reporting—backed by the same persistent records throughout the day.
           </p>
 
           <div className="login-feature-row" aria-label="Gridstone product principles">
