@@ -79,7 +79,6 @@ def main() -> None:
                     "first_name": "Phase Four H",
                     "last_name": "Verification",
                     "email": f"ph4h-verify-{suffix.lower()}@example.invalid",
-                    "phone": "+91 90000 00000",
                     "joined_on": today,
                 },
             ),
