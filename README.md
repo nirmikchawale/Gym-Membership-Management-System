@@ -1,17 +1,21 @@
-# Gym Membership Management System
+# Gridstone
 
-Group 11 Software Engineering project. **Phase 3A — Repository Foundation & Project Initialization and Phase 3B — Database Foundation are complete and verified on `main`. Phase 3C — Authentication & Authorization is next and has not started.**
+Group 11 Software Engineering project. **Phase 3A — Repository Foundation & Project Initialization, Phase 3B — Database Foundation, and Phase 3C — Authentication & Authorization are complete and verified on `main`. Phase 3D — Design System & Product Shell is next and has not started.**
+
+Gridstone is the product name for the Gym Membership Management System.
 
 ## Architecture baseline
 
 - Frontend: React + TypeScript + Vite
 - Backend: FastAPI + Pydantic + SQLAlchemy + Psycopg 3
 - Database: PostgreSQL 18 + Alembic migrations
+- Authentication: Argon2 password hashing + opaque server-side sessions
+- Authorization: server-enforced `admin` / `staff` roles
 - Package managers: pnpm (frontend), uv (backend)
 - Deployment shape: single-origin Dockerized application
 - Local development timezone: `Asia/Kolkata`
 
-Phase 3B adds persistence only: SQLAlchemy tables for members, membership plans, memberships/renewal lineage, attendance, and payments; database constraints/indexes; deterministic Alembic migrations; and integration tests. Business CRUD APIs, authentication/authorization, dashboards, reports, and real source-data imports remain out of scope.
+Phase 3B established persistence for members, membership plans, memberships/renewal lineage, attendance, and payments. Phase 3C adds internal staff/admin authentication and authorization with CSRF-protected, database-backed sessions. Business CRUD APIs, dashboard/reporting, member self-service, and real source-data imports remain future work.
 
 ## Prerequisites
 
@@ -41,6 +45,13 @@ docker compose up -d db
 uv run --project backend alembic -c backend/alembic.ini upgrade head
 ```
 
+Provision the first Gridstone administrator through a hidden password prompt:
+
+```bash
+cd backend
+uv run python -m app.cli.create_user --email admin@example.com --name "Gym Admin" --role admin
+```
+
 ## Local development
 
 Start the backend from the repository root after migrations are current:
@@ -56,14 +67,30 @@ cd frontend
 pnpm dev
 ```
 
-Vite serves the frontend on `http://localhost:5173` and proxies `/api/*` to `http://localhost:8000`. The application shell calls `GET /api/v1/health`, whose success also proves a live PostgreSQL connection.
+Vite serves the frontend on `http://localhost:5173` and proxies `/api/*` to `http://localhost:8000`. Gridstone uses the API health endpoint to prove a live PostgreSQL connection and exposes an internal staff/admin sign-in shell.
 
 Useful endpoints:
 
 - App: `http://localhost:5173`
 - API health: `http://localhost:8000/api/v1/health`
+- Login: `POST http://localhost:8000/api/v1/auth/login`
+- Current user: `GET http://localhost:8000/api/v1/auth/me`
+- Logout: `POST http://localhost:8000/api/v1/auth/logout`
 - OpenAPI JSON: `http://localhost:8000/api/openapi.json`
 - Swagger UI: `http://localhost:8000/api/docs`
+
+## Authentication
+
+Phase 3C implements internal `admin` and `staff` accounts only. There is no public or member self-registration.
+
+- Passwords are stored only as Argon2 hashes.
+- Browser sessions are opaque, random server-side sessions; PostgreSQL stores only the session-token hash.
+- Session cookies are `HttpOnly`, `SameSite=Strict`, and `Secure` outside development/test.
+- Authenticated state-changing requests use CSRF protection.
+- Sessions expire after 8 hours by default and are explicitly revoked on logout.
+- Authorization is enforced server-side.
+
+See [`docs/authentication.md`](docs/authentication.md) for the Phase 3C security contract and provisioning workflow.
 
 ## Database migrations
 
@@ -80,7 +107,7 @@ uv run --project backend alembic -c backend/alembic.ini current
 uv run --project backend alembic -c backend/alembic.ini check
 ```
 
-Create a future migration only after changing SQLAlchemy metadata:
+Create a future revision only after changing SQLAlchemy metadata:
 
 ```bash
 uv run --project backend alembic -c backend/alembic.ini revision --autogenerate -m "describe change"
@@ -96,7 +123,7 @@ Build and run PostgreSQL, the migration job, and the single-origin application:
 docker compose up --build
 ```
 
-Compose waits for PostgreSQL, runs `alembic upgrade head`, and only then starts the app. Open `http://localhost:8000`. Stop the stack with:
+Compose waits for PostgreSQL, runs `alembic upgrade head`, and only then starts Gridstone. Open `http://localhost:8000`. Stop the stack with:
 
 ```bash
 docker compose down
@@ -136,19 +163,23 @@ bash scripts/verify-foundation.sh
 
 ```text
 .
-├── frontend/              React/Vite application
+├── frontend/              React/Vite Gridstone application
 ├── backend/
 │   ├── alembic/           Versioned database migrations
 │   ├── alembic.ini        Alembic configuration
+│   ├── app/api/           FastAPI routes and auth dependencies
+│   ├── app/core/          Settings and security helpers
 │   ├── app/db/models/     SQLAlchemy persistence models
-│   └── tests/             Backend and database integration tests
+│   ├── app/services/      Application services, including authentication
+│   ├── app/cli/           Administrative provisioning helpers
+│   └── tests/             Backend/database/auth integration tests
 ├── data/                  Source-data boundary guidance
-├── docs/                  Architecture, database and workflow notes
+├── docs/                  Architecture, database, auth and workflow notes
 ├── scripts/               Developer verification helpers
 ├── tests/                 Cross-stack/E2E placeholder
 ├── .github/workflows/     CI
 ├── Dockerfile             Production single-origin image with migration assets
-├── docker-compose.yml     PostgreSQL + migration job + application stack
+├── docker-compose.yml     PostgreSQL + migration job + Gridstone stack
 ├── .env.example           Non-secret environment contract
 └── README.md
 ```
@@ -161,10 +192,11 @@ Use `main` plus short-lived branches such as `feat/*`, `fix/*`, `docs/*`, `test/
 
 - Never commit `.env` or real secrets.
 - The values in `.env.example` and Compose defaults are development-only placeholders.
+- Never store plaintext passwords or raw session tokens in PostgreSQL.
 - No card number, CVV, bank credential, UPI PIN, or equivalent payment secret belongs in this system.
 - Phase 3B payments persist transaction metadata only.
-- Authentication and authorization remain Phase 3C work and are intentionally not implemented in Phase 3B.
+- Phase 3C protects internal staff/admin access; member self-service, password reset and MFA are not implemented.
 
 ## Phase boundary
 
-**Phase 3B is complete and verified.** Phase 3C — Authentication & Authorization is the next unstarted phase. Business feature/API behavior must continue to respect the project phase sequence.
+**Phase 3C is complete and verified.** Phase 3D — Design System & Product Shell is the next unstarted phase. The business pages for members, plans, memberships/renewals, attendance, payments, dashboard and reporting remain later work. Production publication should occur only after those approved product phases and final hardening are complete.
