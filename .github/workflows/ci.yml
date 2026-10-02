@@ -78,6 +78,17 @@ jobs:
       - name: Tests
         working-directory: backend
         run: uv run python -m pytest
+      - name: Seed deterministic staging dataset
+        working-directory: backend
+        run: uv run python -m app.cli.seed_demo
+      - name: Rehearse PostgreSQL backup and restore
+        env:
+          PGHOST: 127.0.0.1
+          PGPORT: '5432'
+          PGUSER: gym_app
+          PGPASSWORD: gym_dev_password
+          PGDATABASE: gym_membership
+        run: bash scripts/rehearse-backup-restore.sh
       - name: Verify migration reversibility
         run: |
           uv run --project backend alembic -c backend/alembic.ini downgrade base
@@ -137,6 +148,7 @@ jobs:
           curl --fail --silent --show-error http://localhost:8000/members | grep -q '<title>Gridstone'
           curl --fail --silent --show-error http://localhost:8000/memberships | grep -q '<title>Gridstone'
           curl --fail --silent --show-error http://localhost:8000/attendance | grep -q '<title>Gridstone'
+          curl --fail --silent --show-error http://localhost:8000/reports | grep -q '<title>Gridstone'
           curl --fail --silent --show-error -D - -o /dev/null http://localhost:8000/api/v1/health | grep -qi 'x-content-type-options: nosniff'
       - name: Stop stack
         if: always()
