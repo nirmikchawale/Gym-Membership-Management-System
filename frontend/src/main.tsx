@@ -8,6 +8,7 @@ import './styles/theme.css'
 import './styles/members.css'
 import './styles/plans.css'
 import './styles/memberships.css'
+import './styles/attendance.css'
 import './styles/theme-overrides.css'
 
 initializeTheme()
