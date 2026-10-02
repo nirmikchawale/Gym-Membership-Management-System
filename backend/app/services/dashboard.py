@@ -56,9 +56,7 @@ def get_dashboard_overview(
     membership_total = sum(status_counts.values())
     renewals = _count(
         db,
-        select(func.count())
-        .select_from(Membership)
-        .where(Membership.renewed_from_id.is_not(None)),
+        select(func.count()).select_from(Membership).where(Membership.renewed_from_id.is_not(None)),
     )
 
     today_start = _local_day_start(today)
