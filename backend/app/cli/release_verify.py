@@ -137,8 +137,7 @@ def main() -> None:
         if renewal["renewed_from_membership_id"] != membership["id"]:
             raise SystemExit("Renewal lineage did not reference the original membership")
         print(
-            "PASS membership.renew "
-            f"id={renewal['id']} from={renewal['renewed_from_membership_id']}"
+            f"PASS membership.renew id={renewal['id']} from={renewal['renewed_from_membership_id']}"
         )
 
         access = _expect(
