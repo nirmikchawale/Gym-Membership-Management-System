@@ -9,7 +9,10 @@ function isoDayOffset(day: string, offset: number) {
   return date.toISOString().slice(0, 10)
 }
 
-export function getPreviewDashboard(): DashboardOverview {
+export function getPreviewDashboard(
+  trendDays: 7 | 14 | 30 = 7,
+  expiringDays: 30 | 60 | 90 = 30,
+): DashboardOverview {
   const memberActive = demoMembers.filter((member) => member.status === 'Active').length
   const activeMemberships = demoMemberships.filter((membership) =>
     ['Active', 'Expiring'].includes(membership.status),
@@ -18,21 +21,23 @@ export function getPreviewDashboard(): DashboardOverview {
     (membership) => membership.status === 'Scheduled',
   )
   const openVisits = demoAttendance.filter((visit) => visit.checkOut === null)
-  const attendanceTrend = Array.from({ length: 7 }, (_, index) => {
-    const date = isoDayOffset(PREVIEW_AS_OF, index - 6)
+  const attendanceTrend = Array.from({ length: trendDays }, (_, index) => {
+    const date = isoDayOffset(PREVIEW_AS_OF, index - (trendDays - 1))
     return {
       date,
       checkins: demoAttendance.filter((visit) => visit.date === date).length,
     }
   })
   const planCounts = new Map<string, { name: string; count: number }>()
-  demoMemberships.forEach((membership) => {
-    const current = planCounts.get(membership.planCode)
-    planCounts.set(membership.planCode, {
-      name: membership.planName,
-      count: (current?.count ?? 0) + 1,
+  demoMemberships
+    .filter((membership) => ['Active', 'Expiring', 'Scheduled'].includes(membership.status))
+    .forEach((membership) => {
+      const current = planCounts.get(membership.planCode)
+      planCounts.set(membership.planCode, {
+        name: membership.planName,
+        count: (current?.count ?? 0) + 1,
+      })
     })
-  })
 
   const asOfTime = new Date(`${PREVIEW_AS_OF}T00:00:00Z`).getTime()
   const expiring = activeMemberships
@@ -42,12 +47,14 @@ export function getPreviewDashboard(): DashboardOverview {
         (new Date(`${membership.endsOn}T00:00:00Z`).getTime() - asOfTime) / 86_400_000,
       ),
     }))
-    .filter(({ daysRemaining }) => daysRemaining >= 0 && daysRemaining <= 30)
+    .filter(({ daysRemaining }) => daysRemaining >= 0 && daysRemaining <= expiringDays)
     .sort((left, right) => left.daysRemaining - right.daysRemaining)
     .slice(0, 12)
 
   return {
     as_of: PREVIEW_AS_OF,
+    trend_days: trendDays,
+    expiring_within_days: expiringDays,
     members: {
       total: demoMembers.length,
       active: memberActive,
@@ -65,7 +72,7 @@ export function getPreviewDashboard(): DashboardOverview {
     attendance: {
       open_visits: openVisits.length,
       today_checkins: demoAttendance.filter((visit) => visit.date === PREVIEW_AS_OF).length,
-      last_7_days_checkins: attendanceTrend.reduce((total, day) => total + day.checkins, 0),
+      period_checkins: attendanceTrend.reduce((total, day) => total + day.checkins, 0),
     },
     expiring_soon: expiring.map(({ membership, daysRemaining }) => ({
       membership_id: `demo:${membership.id}`,
