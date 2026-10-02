@@ -1,3 +1,15 @@
+import {
+  demoCreateMember,
+  demoCreatePlan,
+  demoListMembers,
+  demoListPlans,
+  demoSetMemberActive,
+  demoSetPlanActive,
+  demoUpdateMember,
+  demoUpdatePlan,
+  isInteractiveDemoRuntime,
+} from './demo-runtime'
+
 export type HealthResponse = {
   status: 'ok'
   database: 'ok'
@@ -190,6 +202,8 @@ export async function listMembers({
   offset?: number
   signal?: AbortSignal
 } = {}): Promise<MemberListResponse> {
+  if (isInteractiveDemoRuntime()) return demoListMembers({ query, status, limit, offset })
+
   const params = new URLSearchParams({ status, limit: String(limit), offset: String(offset) })
   if (query?.trim()) params.set('query', query.trim())
 
@@ -204,6 +218,8 @@ export async function listMembers({
 }
 
 export async function createMember(payload: MemberInput): Promise<MemberRecord> {
+  if (isInteractiveDemoRuntime()) return demoCreateMember(payload)
+
   const response = await fetch('/api/v1/members', {
     method: 'POST',
     headers: {
@@ -222,6 +238,8 @@ export async function updateMember(
   memberId: string,
   payload: MemberUpdateInput,
 ): Promise<MemberRecord> {
+  if (isInteractiveDemoRuntime()) return demoUpdateMember(memberId, payload)
+
   const response = await fetch(`/api/v1/members/${memberId}`, {
     method: 'PATCH',
     headers: {
@@ -237,6 +255,8 @@ export async function updateMember(
 }
 
 export async function setMemberActive(memberId: string, isActive: boolean): Promise<MemberRecord> {
+  if (isInteractiveDemoRuntime()) return demoSetMemberActive(memberId, isActive)
+
   const action = isActive ? 'activate' : 'deactivate'
   const response = await fetch(`/api/v1/members/${memberId}/${action}`, {
     method: 'POST',
@@ -262,6 +282,8 @@ export async function listPlans({
   offset?: number
   signal?: AbortSignal
 } = {}): Promise<PlanListResponse> {
+  if (isInteractiveDemoRuntime()) return demoListPlans({ query, status, limit, offset })
+
   const params = new URLSearchParams({ status, limit: String(limit), offset: String(offset) })
   if (query?.trim()) params.set('query', query.trim())
 
@@ -276,6 +298,8 @@ export async function listPlans({
 }
 
 export async function createPlan(payload: PlanInput): Promise<PlanRecord> {
+  if (isInteractiveDemoRuntime()) return demoCreatePlan(payload)
+
   const response = await fetch('/api/v1/plans', {
     method: 'POST',
     headers: {
@@ -292,6 +316,8 @@ export async function createPlan(payload: PlanInput): Promise<PlanRecord> {
 }
 
 export async function updatePlan(planId: string, payload: PlanUpdateInput): Promise<PlanRecord> {
+  if (isInteractiveDemoRuntime()) return demoUpdatePlan(planId, payload)
+
   const response = await fetch(`/api/v1/plans/${planId}`, {
     method: 'PATCH',
     headers: {
@@ -308,6 +334,8 @@ export async function updatePlan(planId: string, payload: PlanUpdateInput): Prom
 }
 
 export async function setPlanActive(planId: string, isActive: boolean): Promise<PlanRecord> {
+  if (isInteractiveDemoRuntime()) return demoSetPlanActive(planId, isActive)
+
   const action = isActive ? 'activate' : 'deactivate'
   const response = await fetch(`/api/v1/plans/${planId}/${action}`, {
     method: 'POST',
