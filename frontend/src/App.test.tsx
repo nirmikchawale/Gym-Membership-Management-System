@@ -167,7 +167,7 @@ describe('App', () => {
     render(<App />)
 
     expect(await screen.findByRole('heading', { name: /today at gridstone/i })).toBeVisible()
-    expect(await screen.findByText('10')).toBeVisible()
+    expect(await screen.findByText(/2 inactive · 12 total/i)).toBeVisible()
     expect(screen.getByText(/Active members/i)).toBeVisible()
     expect(screen.getByText(/26 in last 7 days/i)).toBeVisible()
     expect(screen.getAllByText(/Gridstone Admin/i)).toHaveLength(2)
