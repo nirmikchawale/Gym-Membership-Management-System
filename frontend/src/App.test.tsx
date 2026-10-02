@@ -146,7 +146,7 @@ describe('App', () => {
     ).toBeVisible()
     expect(screen.getByText(/Find the member before opening the gate/i)).toBeVisible()
     expect(screen.getByPlaceholderText(/Member code, name, phone or email/i)).toBeVisible()
-    expect(screen.getByText(/No attendance visits match these filters/i)).toBeVisible()
+    expect(await screen.findByText(/No attendance visits match these filters/i)).toBeVisible()
   })
 
   it('persists explicit light and dark theme selection', async () => {
