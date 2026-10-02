@@ -39,12 +39,12 @@ def _apply_security_headers(request: Request, response: Response) -> None:
     response.headers["Cross-Origin-Resource-Policy"] = "same-origin"
 
     if request.url.path.startswith("/api/"):
-        response.headers["Content-Security-Policy"] = "frame-ancestors 'none'"
+        response.headers["Content-Security-Policy"] = "default-src 'none'; frame-ancestors 'none'"
         response.headers["Cache-Control"] = "no-store"
     else:
         response.headers["Content-Security-Policy"] = (
-            "default-src 'self'; base-uri 'self'; frame-ancestors 'none'; "
-            "form-action 'self'; img-src 'self' data:; font-src 'self'; "
+            "default-src 'self'; base-uri 'self'; frame-ancestors 'none'; object-src 'none'; "
+            "frame-src 'none'; form-action 'self'; img-src 'self' data:; font-src 'self'; "
             "script-src 'self'; style-src 'self'; connect-src 'self'"
         )
 
