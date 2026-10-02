@@ -45,7 +45,6 @@ def test_demo_seed_is_blocked_in_production() -> None:
 
 def test_production_configuration_validation_rejects_local_defaults() -> None:
     config = Settings(
-        _env_file=None,
         app_env="production",
         database_url="postgresql+psycopg://gym_app:gym_dev_password@localhost:5432/gym_membership",
     )
@@ -56,7 +55,6 @@ def test_production_configuration_validation_rejects_local_defaults() -> None:
 
 def test_production_configuration_validation_accepts_managed_postgres_shape() -> None:
     config = Settings(
-        _env_file=None,
         app_env="production",
         database_url="postgresql+psycopg://gridstone:secret-value@db.internal.example:5432/gridstone",
     )
