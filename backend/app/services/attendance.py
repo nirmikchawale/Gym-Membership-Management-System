@@ -1,5 +1,5 @@
 from collections.abc import Sequence
-from datetime import date, datetime, time, timedelta, timezone
+from datetime import UTC, date, datetime, time, timedelta
 from uuid import UUID
 
 from sqlalchemy import func, or_, select
@@ -37,7 +37,7 @@ def _escaped_like(value: str) -> str:
 
 
 def _local_day_start(day: date) -> datetime:
-    return datetime.combine(day, time.min, tzinfo=settings.timezone).astimezone(timezone.utc)
+    return datetime.combine(day, time.min, tzinfo=settings.timezone).astimezone(UTC)
 
 
 def _member(db: Session, member_id: UUID) -> Member:
@@ -151,7 +151,7 @@ def get_attendance(db: Session, attendance_id: UUID) -> Attendance:
 def check_out(db: Session, visit: Attendance) -> Attendance:
     if visit.checked_out_at is not None:
         raise AttendanceConflictError("Visit has already been checked out")
-    visit.checked_out_at = datetime.now(timezone.utc)
+    visit.checked_out_at = datetime.now(UTC)
     db.commit()
     db.refresh(visit)
     return visit
