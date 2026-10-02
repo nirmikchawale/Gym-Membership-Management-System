@@ -1,4 +1,4 @@
-from sqlalchemy import delete
+from sqlalchemy import delete, select
 from sqlalchemy.orm import Session
 
 from app.cli.seed_demo import PLAN_DEFINITIONS, _require_safe_environment, seed_demo
@@ -29,7 +29,10 @@ def test_demo_seed_is_deterministic_and_idempotent() -> None:
         second = seed_demo(db, member_count=6, environment="test")
         assert first == {"plans": 4, "members": 6, "memberships": 6, "attendance": 6}
         assert second == {"plans": 0, "members": 0, "memberships": 0, "attendance": 0}
-        assert db.query(Member).filter(Member.member_code.like("GST-DEMO-%")).count() == 6
+        demo_members = db.scalars(
+            select(Member).where(Member.member_code.like("GST-DEMO-%"))
+        ).all()
+        assert len(demo_members) == 6
         _cleanup_demo_rows(db)
 
 
