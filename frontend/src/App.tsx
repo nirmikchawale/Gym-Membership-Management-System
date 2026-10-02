@@ -11,6 +11,7 @@ import { WorkspaceShell } from './components/WorkspaceShell'
 import { HomePage } from './pages/HomePage'
 import { LoginPage } from './pages/LoginPage'
 import { MembersPage } from './pages/MembersPage'
+import { MembershipsPage } from './pages/MembershipsPage'
 import { ModulePage } from './pages/ModulePage'
 import { NotFoundPage } from './pages/NotFoundPage'
 import { PlansPage } from './pages/PlansPage'
@@ -64,7 +65,6 @@ function SessionError({ message }: { message: string }) {
 
 function GridstoneApplication() {
   useScrollTide()
-
   const publicPreview = isPublicPreviewBuild()
   const [auth, setAuth] = useState<AuthState>(
     publicPreview ? { kind: 'authenticated', user: publicPreviewUser } : { kind: 'loading' },
@@ -75,31 +75,26 @@ function GridstoneApplication() {
 
   useEffect(() => {
     if (publicPreview) return
-
     const controller = new AbortController()
-
     void getCurrentUser(controller.signal)
       .then((user) => setAuth(user ? { kind: 'authenticated', user } : { kind: 'anonymous' }))
       .catch((error: unknown) => {
-        if (controller.signal.aborted) return
-        setAuth({
-          kind: 'error',
-          message: error instanceof Error ? error.message : 'Unable to verify your session',
-        })
+        if (!controller.signal.aborted)
+          setAuth({
+            kind: 'error',
+            message: error instanceof Error ? error.message : 'Unable to verify your session',
+          })
       })
-
     void getHealth(controller.signal)
       .then((data) => setHealth({ kind: 'loaded', data }))
       .catch(() => {
         if (!controller.signal.aborted) setHealth({ kind: 'error' })
       })
-
     return () => controller.abort()
   }, [publicPreview])
 
   if (auth.kind === 'loading') return <BootScreen />
   if (auth.kind === 'error') return <SessionError message={auth.message} />
-
   if (auth.kind === 'anonymous') {
     return (
       <Routes>
@@ -123,7 +118,7 @@ function GridstoneApplication() {
   }
 
   const laterModules = moduleDefinitions.filter(
-    (module) => module.path !== '/members' && module.path !== '/plans',
+    (module) => !['/members', '/plans', '/memberships'].includes(module.path),
   )
 
   return (
@@ -145,6 +140,7 @@ function GridstoneApplication() {
           path="plans"
           element={<PlansPage publicPreview={publicPreview} user={auth.user} />}
         />
+        <Route path="memberships" element={<MembershipsPage publicPreview={publicPreview} />} />
         {laterModules.map((module) => (
           <Route
             key={module.path}

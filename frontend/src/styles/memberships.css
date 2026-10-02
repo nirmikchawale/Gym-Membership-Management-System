@@ -1,0 +1,151 @@
+.membership-page-heading {
+  align-items: flex-end;
+}
+.membership-metrics {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.85rem;
+}
+.membership-metrics article {
+  min-width: 0;
+  padding: 1rem;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  background: var(--surface-1);
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.25rem 0.65rem;
+  align-items: center;
+}
+.membership-metrics article svg {
+  grid-row: 1 / 3;
+  color: var(--accent-strong);
+}
+.membership-metrics span {
+  color: var(--text-muted);
+  font-size: 0.78rem;
+}
+.membership-metrics strong {
+  font-size: 1.25rem;
+}
+.membership-workspace {
+  display: grid;
+  grid-template-columns: minmax(0, 1.55fr) minmax(17rem, 0.75fr);
+  gap: 1rem;
+  align-items: start;
+}
+.membership-toolbar {
+  grid-template-columns: minmax(0, 1fr) minmax(10rem, 0.32fr);
+}
+.membership-name-button {
+  border: 0;
+  background: transparent;
+  color: inherit;
+  padding: 0;
+  text-align: left;
+  display: grid;
+  gap: 0.15rem;
+  cursor: pointer;
+  font: inherit;
+}
+.membership-name-button small,
+.membership-table td small {
+  display: block;
+  color: var(--text-muted);
+  margin-top: 0.18rem;
+}
+.membership-row--selected {
+  background: var(--surface-accent-soft);
+}
+.membership-detail {
+  position: sticky;
+  top: 5.5rem;
+  display: grid;
+  gap: 1rem;
+}
+.membership-detail__heading {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.75rem;
+  align-items: flex-start;
+}
+.membership-detail__heading h2 {
+  margin: 0.15rem 0 0;
+}
+.membership-detail__facts {
+  display: grid;
+  gap: 0.75rem;
+  margin: 0;
+}
+.membership-detail__facts div {
+  display: grid;
+  gap: 0.18rem;
+  padding-bottom: 0.7rem;
+  border-bottom: 1px solid var(--border-subtle);
+}
+.membership-detail__facts dt {
+  color: var(--text-muted);
+  font-size: 0.76rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+.membership-detail__facts dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+.membership-detail__notes,
+.membership-detail__note {
+  color: var(--text-muted);
+  line-height: 1.55;
+}
+.membership-detail__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.55rem;
+}
+@media (max-width: 62rem) {
+  .membership-workspace {
+    grid-template-columns: 1fr;
+  }
+  .membership-detail {
+    position: static;
+  }
+}
+@media (max-width: 44rem) {
+  .membership-metrics {
+    grid-template-columns: 1fr;
+  }
+  .membership-toolbar {
+    grid-template-columns: 1fr;
+  }
+  .membership-table thead {
+    display: none;
+  }
+  .membership-table,
+  .membership-table tbody,
+  .membership-table tr,
+  .membership-table td {
+    display: block;
+    width: 100%;
+  }
+  .membership-table tr {
+    padding: 0.85rem;
+    border-bottom: 1px solid var(--border-subtle);
+  }
+  .membership-table td {
+    display: grid;
+    grid-template-columns: minmax(6.5rem, 0.4fr) minmax(0, 1fr);
+    gap: 0.75rem;
+    padding: 0.42rem 0;
+    border: 0;
+  }
+  .membership-table td::before {
+    content: attr(data-label);
+    color: var(--text-muted);
+    font-size: 0.78rem;
+  }
+  .membership-table td:last-child {
+    display: flex;
+    justify-content: flex-end;
+  }
+}
