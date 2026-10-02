@@ -9,13 +9,7 @@ type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
   icon?: ReactNode
 }
 
-export function Button({
-  variant = 'primary',
-  icon,
-  className,
-  children,
-  ...props
-}: ButtonProps) {
+export function Button({ variant = 'primary', icon, className, children, ...props }: ButtonProps) {
   return (
     <button className={cx('button', `button--${variant}`, className)} {...props}>
       {icon && <span className="button__icon">{icon}</span>}

@@ -217,7 +217,9 @@ svg {
   border: 1px solid rgb(127 156 255 / 34%);
   border-radius: 0.75rem;
   background: linear-gradient(145deg, rgb(127 156 255 / 12%), rgb(165 140 255 / 5%));
-  box-shadow: inset 0 1px 0 rgb(255 255 255 / 7%), 0 10px 30px rgb(72 97 190 / 12%);
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 7%),
+    0 10px 30px rgb(72 97 190 / 12%);
 }
 
 .brand__mark span {
@@ -477,9 +479,17 @@ svg {
   background: var(--accent);
 }
 
-.proof-card__signal span:nth-child(1) { height: 42%; opacity: 0.45; }
-.proof-card__signal span:nth-child(2) { height: 72%; opacity: 0.72; }
-.proof-card__signal span:nth-child(3) { height: 100%; }
+.proof-card__signal span:nth-child(1) {
+  height: 42%;
+  opacity: 0.45;
+}
+.proof-card__signal span:nth-child(2) {
+  height: 72%;
+  opacity: 0.72;
+}
+.proof-card__signal span:nth-child(3) {
+  height: 100%;
+}
 
 .proof-card__copy {
   margin: 0.35rem 0 0;
@@ -501,7 +511,9 @@ svg {
   border-radius: var(--radius-xl);
   background: linear-gradient(160deg, rgb(22 27 39 / 93%), rgb(13 16 23 / 96%));
   padding: clamp(1.35rem, 4vw, 2rem);
-  box-shadow: var(--shadow-lg), inset 0 1px 0 rgb(255 255 255 / 5%);
+  box-shadow:
+    var(--shadow-lg),
+    inset 0 1px 0 rgb(255 255 255 / 5%);
   backdrop-filter: blur(22px);
   animation: rise-in 720ms 80ms cubic-bezier(0.2, 0.76, 0.22, 1) both;
 }
@@ -654,8 +666,12 @@ svg {
   animation: signal 1.1s ease-in-out infinite;
 }
 
-.boot-screen__signal span:nth-child(2) { animation-delay: 120ms; }
-.boot-screen__signal span:nth-child(3) { animation-delay: 240ms; }
+.boot-screen__signal span:nth-child(2) {
+  animation-delay: 120ms;
+}
+.boot-screen__signal span:nth-child(3) {
+  animation-delay: 240ms;
+}
 
 .error-screen__icon {
   display: grid;
@@ -1238,9 +1254,18 @@ svg {
   border-radius: 0.78rem;
 }
 
-.module-card__icon--1 { background: rgb(127 156 255 / 9%); color: #b9c7ff; }
-.module-card__icon--2 { background: rgb(165 140 255 / 9%); color: #c7baff; }
-.module-card__icon--3 { background: rgb(110 216 231 / 8%); color: #a4e7ef; }
+.module-card__icon--1 {
+  background: rgb(127 156 255 / 9%);
+  color: #b9c7ff;
+}
+.module-card__icon--2 {
+  background: rgb(165 140 255 / 9%);
+  color: #c7baff;
+}
+.module-card__icon--3 {
+  background: rgb(110 216 231 / 8%);
+  color: #a4e7ef;
+}
 
 .module-card__body {
   min-width: 0;
@@ -1279,7 +1304,9 @@ svg {
 
 .module-card__arrow {
   color: #566277;
-  transition: transform 160ms ease, color 160ms ease;
+  transition:
+    transform 160ms ease,
+    color 160ms ease;
 }
 
 .module-card:hover .module-card__arrow {
@@ -1416,12 +1443,31 @@ svg {
   animation: shimmer 2.4s ease-in-out infinite;
 }
 
-.skeleton--search { width: min(55%, 19rem); height: 2.35rem; }
-.skeleton--button { width: 5.5rem; height: 2.35rem; }
-.skeleton--avatar { width: 2rem; height: 2rem; border-radius: 0.62rem; }
-.skeleton--wide { width: 84%; height: 0.68rem; }
-.skeleton--medium { width: 72%; height: 0.68rem; }
-.skeleton--short { width: 60%; height: 0.68rem; }
+.skeleton--search {
+  width: min(55%, 19rem);
+  height: 2.35rem;
+}
+.skeleton--button {
+  width: 5.5rem;
+  height: 2.35rem;
+}
+.skeleton--avatar {
+  width: 2rem;
+  height: 2rem;
+  border-radius: 0.62rem;
+}
+.skeleton--wide {
+  width: 84%;
+  height: 0.68rem;
+}
+.skeleton--medium {
+  width: 72%;
+  height: 0.68rem;
+}
+.skeleton--short {
+  width: 60%;
+  height: 0.68rem;
+}
 
 .blueprint-table {
   display: grid;
@@ -1506,23 +1552,46 @@ svg {
 }
 
 @keyframes rise-in {
-  from { opacity: 0; transform: translateY(16px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 @keyframes page-in {
-  from { opacity: 0; transform: translateY(6px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 @keyframes signal {
-  0%, 100% { opacity: 0.28; transform: translateY(0); }
-  50% { opacity: 1; transform: translateY(-3px); }
+  0%,
+  100% {
+    opacity: 0.28;
+    transform: translateY(0);
+  }
+  50% {
+    opacity: 1;
+    transform: translateY(-3px);
+  }
 }
 
 @keyframes shimmer {
-  0% { background-position: 100% 0; }
-  100% { background-position: -100% 0; }
+  0% {
+    background-position: 100% 0;
+  }
+  100% {
+    background-position: -100% 0;
+  }
 }
 
 @media (min-width: 68rem) {

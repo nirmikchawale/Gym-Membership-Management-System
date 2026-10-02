@@ -28,7 +28,12 @@ export const moduleDefinitions: ModuleDefinition[] = [
     title: 'Members',
     description:
       'A focused workspace for member records, contact details, membership context and lifecycle actions.',
-    capabilities: ['Search and filtering', 'Member profiles', 'Create and edit', 'Active status controls'],
+    capabilities: [
+      'Search and filtering',
+      'Member profiles',
+      'Create and edit',
+      'Active status controls',
+    ],
   },
   {
     label: 'Plans',
@@ -38,7 +43,12 @@ export const moduleDefinitions: ModuleDefinition[] = [
     title: 'Membership plans',
     description:
       'A clean catalogue for plan duration, pricing, availability and the rules staff rely on at the desk.',
-    capabilities: ['Plan catalogue', 'Duration and pricing', 'Availability controls', 'Safe historical pricing'],
+    capabilities: [
+      'Plan catalogue',
+      'Duration and pricing',
+      'Availability controls',
+      'Safe historical pricing',
+    ],
   },
   {
     label: 'Memberships',
@@ -48,7 +58,12 @@ export const moduleDefinitions: ModuleDefinition[] = [
     title: 'Memberships & renewals',
     description:
       'The operational view of starts, expiries, renewals and the membership history attached to every member.',
-    capabilities: ['Assign memberships', 'Expiry visibility', 'Renewal lineage', 'Lifecycle status'],
+    capabilities: [
+      'Assign memberships',
+      'Expiry visibility',
+      'Renewal lineage',
+      'Lifecycle status',
+    ],
   },
   {
     label: 'Attendance',

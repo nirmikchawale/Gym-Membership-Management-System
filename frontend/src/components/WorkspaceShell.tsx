@@ -82,7 +82,10 @@ export function WorkspaceShell({
         />
       )}
 
-      <aside className={`sidebar${mobileNavOpen ? ' sidebar--open' : ''}`} aria-label="Primary navigation">
+      <aside
+        className={`sidebar${mobileNavOpen ? ' sidebar--open' : ''}`}
+        aria-label="Primary navigation"
+      >
         <div className="sidebar__top">
           <Brand compact />
           <button
@@ -119,12 +122,17 @@ export function WorkspaceShell({
 
         <div className="sidebar__footer">
           <div className="system-card">
-            <div className="system-card__icon" aria-hidden="true"><Database size={18} /></div>
+            <div className="system-card__icon" aria-hidden="true">
+              <Database size={18} />
+            </div>
             <div>
               <p>Gridstone core</p>
               <span>{healthLabel(health)}</span>
             </div>
-            <span className={`system-card__pulse system-card__pulse--${health.kind}`} aria-hidden="true" />
+            <span
+              className={`system-card__pulse system-card__pulse--${health.kind}`}
+              aria-hidden="true"
+            />
           </div>
           <p className="sidebar__caption">Asia/Kolkata · Secure staff session</p>
         </div>
@@ -148,16 +156,29 @@ export function WorkspaceShell({
           </div>
 
           <div className="topbar__actions">
-            <Badge tone={health.kind === 'loaded' ? 'success' : health.kind === 'error' ? 'danger' : 'neutral'}>
+            <Badge
+              tone={
+                health.kind === 'loaded'
+                  ? 'success'
+                  : health.kind === 'error'
+                    ? 'danger'
+                    : 'neutral'
+              }
+            >
               <span className="badge__dot" aria-hidden="true" />
               {healthLabel(health)}
             </Badge>
 
             <div className="user-chip">
-              <span className="user-chip__avatar" aria-hidden="true">{initials(user.full_name)}</span>
+              <span className="user-chip__avatar" aria-hidden="true">
+                {initials(user.full_name)}
+              </span>
               <span className="user-chip__identity">
                 <strong>{user.full_name}</strong>
-                <small><ShieldCheck size={12} aria-hidden="true" />{user.role}</small>
+                <small>
+                  <ShieldCheck size={12} aria-hidden="true" />
+                  {user.role}
+                </small>
               </span>
             </div>
 

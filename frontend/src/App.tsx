@@ -23,7 +23,11 @@ function BootScreen() {
   return (
     <main id="main-content" className="boot-screen" aria-live="polite">
       <Brand />
-      <div className="boot-screen__signal" aria-hidden="true"><span /><span /><span /></div>
+      <div className="boot-screen__signal" aria-hidden="true">
+        <span />
+        <span />
+        <span />
+      </div>
       <p>Opening your workspace…</p>
     </main>
   )
@@ -32,11 +36,15 @@ function BootScreen() {
 function SessionError({ message }: { message: string }) {
   return (
     <main id="main-content" className="error-screen" role="alert">
-      <span className="error-screen__icon" aria-hidden="true"><AlertTriangle size={24} /></span>
+      <span className="error-screen__icon" aria-hidden="true">
+        <AlertTriangle size={24} />
+      </span>
       <p className="page-eyebrow">Gridstone session</p>
       <h1>We couldn’t verify your workspace.</h1>
       <p>{message}</p>
-      <Button type="button" onClick={() => window.location.reload()}>Try again</Button>
+      <Button type="button" onClick={() => window.location.reload()}>
+        Try again
+      </Button>
     </main>
   )
 }
@@ -77,7 +85,12 @@ function GridstoneApplication() {
       <Routes>
         <Route
           path="*"
-          element={<LoginPage health={health} onAuthenticated={(user) => setAuth({ kind: 'authenticated', user })} />}
+          element={
+            <LoginPage
+              health={health}
+              onAuthenticated={(user) => setAuth({ kind: 'authenticated', user })}
+            />
+          }
         />
       </Routes>
     )
@@ -94,7 +107,11 @@ function GridstoneApplication() {
         <Route index element={<HomePage user={auth.user} health={health} />} />
         <Route path="dashboard" element={<Navigate to="/" replace />} />
         {moduleDefinitions.map((module) => (
-          <Route key={module.path} path={module.path.slice(1)} element={<ModulePage module={module} />} />
+          <Route
+            key={module.path}
+            path={module.path.slice(1)}
+            element={<ModulePage module={module} />}
+          />
         ))}
         <Route path="*" element={<NotFoundPage />} />
       </Route>

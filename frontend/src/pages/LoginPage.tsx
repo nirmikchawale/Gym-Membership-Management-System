@@ -56,9 +56,18 @@ export function LoginPage({
           </p>
 
           <div className="login-feature-row" aria-label="Gridstone product principles">
-            <span><Sparkles size={16} aria-hidden="true" />Fast at the front desk</span>
-            <span><ShieldCheck size={16} aria-hidden="true" />Secure by default</span>
-            <span><LockKeyhole size={16} aria-hidden="true" />Staff-only access</span>
+            <span>
+              <Sparkles size={16} aria-hidden="true" />
+              Fast at the front desk
+            </span>
+            <span>
+              <ShieldCheck size={16} aria-hidden="true" />
+              Secure by default
+            </span>
+            <span>
+              <LockKeyhole size={16} aria-hidden="true" />
+              Staff-only access
+            </span>
           </div>
         </div>
 
@@ -81,7 +90,9 @@ export function LoginPage({
       <section className="signin-wrap" aria-labelledby="signin-title">
         <div className="signin-panel">
           <div className="signin-header">
-            <span className="signin-icon" aria-hidden="true"><LockKeyhole size={20} /></span>
+            <span className="signin-icon" aria-hidden="true">
+              <LockKeyhole size={20} />
+            </span>
             <div>
               <p className="signin-eyebrow">Secure staff access</p>
               <h2 id="signin-title">Welcome back.</h2>
