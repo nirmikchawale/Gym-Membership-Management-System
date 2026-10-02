@@ -43,9 +43,7 @@ def upgrade() -> None:
         sa.Column("email", sa.String(length=320), nullable=True),
         sa.Column("phone", sa.String(length=32), nullable=True),
         sa.Column("date_of_birth", sa.Date(), nullable=True),
-        sa.Column(
-            "joined_on", sa.Date(), server_default=sa.text("CURRENT_DATE"), nullable=False
-        ),
+        sa.Column("joined_on", sa.Date(), server_default=sa.text("CURRENT_DATE"), nullable=False),
         sa.Column("is_active", sa.Boolean(), server_default=sa.text("true"), nullable=False),
         sa.Column("id", sa.Uuid(), nullable=False),
         *_timestamps(),
@@ -91,9 +89,7 @@ def upgrade() -> None:
         sa.CheckConstraint(
             "length(trim(name)) > 0", name=op.f("ck_membership_plans_name_not_blank")
         ),
-        sa.CheckConstraint(
-            "price >= 0", name=op.f("ck_membership_plans_price_non_negative")
-        ),
+        sa.CheckConstraint("price >= 0", name=op.f("ck_membership_plans_price_non_negative")),
         sa.PrimaryKeyConstraint("id", name=op.f("pk_membership_plans")),
         sa.UniqueConstraint("code", name=op.f("uq_membership_plans_code")),
     )
@@ -208,9 +204,7 @@ def upgrade() -> None:
         sa.Column("id", sa.Uuid(), nullable=False),
         *_timestamps(),
         sa.CheckConstraint("amount > 0", name=op.f("ck_payments_amount_positive")),
-        sa.CheckConstraint(
-            "char_length(currency) = 3", name=op.f("ck_payments_currency_length")
-        ),
+        sa.CheckConstraint("char_length(currency) = 3", name=op.f("ck_payments_currency_length")),
         sa.CheckConstraint(
             "method IN ('cash', 'card', 'upi', 'bank_transfer', 'other')",
             name=op.f("ck_payments_method_valid"),
