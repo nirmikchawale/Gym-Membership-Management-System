@@ -1,12 +1,13 @@
 # Gridstone
 
-Group 11 Software Engineering project. **Phase 3A — Repository Foundation & Project Initialization, Phase 3B — Database Foundation, and Phase 3C — Authentication & Authorization are complete and verified on `main`. Phase 3D — Design System & Product Shell is next and has not started.**
+Group 11 Software Engineering project. **Phases 3A — Repository Foundation & Project Initialization, 3B — Database Foundation, 3C — Authentication & Authorization, and 3D — Design System & Product Shell are complete and verified on `main`. The next vertical product slice is Members.**
 
 Gridstone is the product name for the Gym Membership Management System.
 
 ## Architecture baseline
 
-- Frontend: React + TypeScript + Vite
+- Frontend: React + TypeScript + Vite + React Router
+- UI iconography: Lucide React
 - Backend: FastAPI + Pydantic + SQLAlchemy + Psycopg 3
 - Database: PostgreSQL 18 + Alembic migrations
 - Authentication: Argon2 password hashing + opaque server-side sessions
@@ -15,7 +16,25 @@ Gridstone is the product name for the Gym Membership Management System.
 - Deployment shape: single-origin Dockerized application
 - Local development timezone: `Asia/Kolkata`
 
-Phase 3B established persistence for members, membership plans, memberships/renewal lineage, attendance, and payments. Phase 3C adds internal staff/admin authentication and authorization with CSRF-protected, database-backed sessions. Business CRUD APIs, dashboard/reporting, member self-service, and real source-data imports remain future work.
+Phase 3B established persistence for members, membership plans, memberships/renewal lineage, attendance, and payments. Phase 3C added internal staff/admin authentication and authorization with CSRF-protected, database-backed sessions. Phase 3D established the responsive Gridstone product shell, design tokens, navigation, real routes/deep links, accessible motion and honest future-module blueprints. Business CRUD APIs, dashboard/reporting data, member self-service, and real source-data imports remain future work.
+
+## Gridstone product shell
+
+The verified Phase 3D interface uses a Graphite + electric cobalt + mineral violet visual system with a geometric Gridstone mark, responsive desktop/mobile navigation, live staff identity and system-health treatment, and restrained scroll-tide ambient depth that respects `prefers-reduced-motion`.
+
+Current authenticated product routes:
+
+- `/` — workspace overview
+- `/members`
+- `/plans`
+- `/memberships`
+- `/attendance`
+- `/payments`
+- `/reports`
+
+The business-module routes are intentionally design-system blueprints until their owning vertical slices are implemented. They do not fabricate operational records or pretend unfinished CRUD exists.
+
+See [`docs/design-system.md`](docs/design-system.md) for the Phase 3D design, responsive, accessibility and motion contract.
 
 ## Prerequisites
 
@@ -67,7 +86,7 @@ cd frontend
 pnpm dev
 ```
 
-Vite serves the frontend on `http://localhost:5173` and proxies `/api/*` to `http://localhost:8000`. Gridstone uses the API health endpoint to prove a live PostgreSQL connection and exposes an internal staff/admin sign-in shell.
+Vite serves Gridstone on `http://localhost:5173` and proxies `/api/*` to `http://localhost:8000`. The application verifies the active staff session and API/PostgreSQL health at startup. In the production single-origin image, FastAPI serves the built SPA and safely falls back to `index.html` for non-API deep links such as `/members`; unknown `/api/*` paths remain API 404s.
 
 Useful endpoints:
 
@@ -117,7 +136,7 @@ See [`docs/database.md`](docs/database.md) for schema decisions and invariants.
 
 ## Docker
 
-Build and run PostgreSQL, the migration job, and the single-origin application:
+Build and run PostgreSQL, the migration job, and the single-origin Gridstone application:
 
 ```bash
 docker compose up --build
@@ -164,6 +183,11 @@ bash scripts/verify-foundation.sh
 ```text
 .
 ├── frontend/              React/Vite Gridstone application
+│   └── src/
+│       ├── components/    Brand, UI primitives and workspace shell
+│       ├── lib/           API, navigation, app state and motion helpers
+│       ├── pages/         Overview, login and routed module surfaces
+│       └── styles/        Gridstone design tokens and responsive system
 ├── backend/
 │   ├── alembic/           Versioned database migrations
 │   ├── alembic.ini        Alembic configuration
@@ -174,7 +198,7 @@ bash scripts/verify-foundation.sh
 │   ├── app/cli/           Administrative provisioning helpers
 │   └── tests/             Backend/database/auth integration tests
 ├── data/                  Source-data boundary guidance
-├── docs/                  Architecture, database, auth and workflow notes
+├── docs/                  Architecture, database, auth, design and workflow notes
 ├── scripts/               Developer verification helpers
 ├── tests/                 Cross-stack/E2E placeholder
 ├── .github/workflows/     CI
@@ -196,7 +220,8 @@ Use `main` plus short-lived branches such as `feat/*`, `fix/*`, `docs/*`, `test/
 - No card number, CVV, bank credential, UPI PIN, or equivalent payment secret belongs in this system.
 - Phase 3B payments persist transaction metadata only.
 - Phase 3C protects internal staff/admin access; member self-service, password reset and MFA are not implemented.
+- Phase 3D adds no business write paths; future module actions must preserve server-side authorization and CSRF controls.
 
 ## Phase boundary
 
-**Phase 3C is complete and verified.** Phase 3D — Design System & Product Shell is the next unstarted phase. The business pages for members, plans, memberships/renewals, attendance, payments, dashboard and reporting remain later work. Production publication should occur only after those approved product phases and final hardening are complete.
+**Phase 3D — Design System & Product Shell is complete and verified.** The next vertical product slice is **Members**. Plans, memberships/renewals, attendance, payments, dashboard and reporting remain later work. Production publication should occur only after those approved product slices and final hardening are complete.
