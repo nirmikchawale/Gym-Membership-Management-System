@@ -21,6 +21,8 @@ describe('registered demo members', () => {
   })
 
   it('uses only synthetic example.com contact addresses', () => {
-    expect(registeredDemoMembers.every((member) => member.email.endsWith('@example.com'))).toBe(true)
+    expect(registeredDemoMembers.every((member) => member.email.endsWith('@example.com'))).toBe(
+      true,
+    )
   })
 })

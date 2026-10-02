@@ -1,4 +1,12 @@
-import { ArrowUpRight, Database, KeyRound, ShieldCheck, Smartphone, Sparkles, UsersRound } from 'lucide-react'
+import {
+  ArrowUpRight,
+  Database,
+  KeyRound,
+  ShieldCheck,
+  Smartphone,
+  Sparkles,
+  UsersRound,
+} from 'lucide-react'
 import { Link } from 'react-router-dom'
 import type { AuthUser } from '../lib/api'
 import type { HealthState } from '../lib/app-state'
@@ -74,16 +82,31 @@ export function HomePage({ user, health }: { user: AuthUser; health: HealthState
           </div>
           <div className="signal-list">
             <div className="signal-row">
-              <span className="signal-row__icon"><Database size={17} aria-hidden="true" /></span>
-              <span><strong>Data backbone</strong><small>{databaseCopy(health)}</small></span>
+              <span className="signal-row__icon">
+                <Database size={17} aria-hidden="true" />
+              </span>
+              <span>
+                <strong>Data backbone</strong>
+                <small>{databaseCopy(health)}</small>
+              </span>
             </div>
             <div className="signal-row">
-              <span className="signal-row__icon"><KeyRound size={17} aria-hidden="true" /></span>
-              <span><strong>Staff identity</strong><small>Opaque sessions + CSRF protection</small></span>
+              <span className="signal-row__icon">
+                <KeyRound size={17} aria-hidden="true" />
+              </span>
+              <span>
+                <strong>Staff identity</strong>
+                <small>Opaque sessions + CSRF protection</small>
+              </span>
             </div>
             <div className="signal-row">
-              <span className="signal-row__icon"><ShieldCheck size={17} aria-hidden="true" /></span>
-              <span><strong>Members API</strong><small>Authenticated, validated and paginated</small></span>
+              <span className="signal-row__icon">
+                <ShieldCheck size={17} aria-hidden="true" />
+              </span>
+              <span>
+                <strong>Members API</strong>
+                <small>Authenticated, validated and paginated</small>
+              </span>
             </div>
           </div>
         </article>
@@ -101,8 +124,14 @@ export function HomePage({ user, health }: { user: AuthUser; health: HealthState
           <div className="compact-list">
             {recentDemoMembers.map((member) => (
               <div className="compact-list__row" key={member.code}>
-                <span><strong>{member.name}</strong><small>{member.code}</small></span>
-                <span><strong>{member.planCode}</strong><small>{member.status}</small></span>
+                <span>
+                  <strong>{member.name}</strong>
+                  <small>{member.code}</small>
+                </span>
+                <span>
+                  <strong>{member.planCode}</strong>
+                  <small>{member.status}</small>
+                </span>
               </div>
             ))}
           </div>
@@ -117,28 +146,54 @@ export function HomePage({ user, health }: { user: AuthUser; health: HealthState
             <Badge tone="neutral">Scope locked</Badge>
           </div>
           <div className="compact-list">
-            {moduleDefinitions.filter((module) => module.path !== '/members').slice(0, 4).map((module) => (
-              <div className="compact-list__row" key={module.path}>
-                <span><strong>{module.label}</strong><small>{module.eyebrow}</small></span>
-                <span><strong>Later</strong><small>approved slice</small></span>
-              </div>
-            ))}
+            {moduleDefinitions
+              .filter((module) => module.path !== '/members')
+              .slice(0, 4)
+              .map((module) => (
+                <div className="compact-list__row" key={module.path}>
+                  <span>
+                    <strong>{module.label}</strong>
+                    <small>{module.eyebrow}</small>
+                  </span>
+                  <span>
+                    <strong>Later</strong>
+                    <small>approved slice</small>
+                  </span>
+                </div>
+              ))}
           </div>
         </article>
       </section>
 
       <section className="principle-grid" aria-label="Gridstone member slice principles">
         <article className="principle-card">
-          <span><UsersRound size={19} aria-hidden="true" /></span>
-          <div><strong>112-record public dataset</strong><p>All preview member identities and contacts are synthetic and deterministic.</p></div>
+          <span>
+            <UsersRound size={19} aria-hidden="true" />
+          </span>
+          <div>
+            <strong>112-record public dataset</strong>
+            <p>All preview member identities and contacts are synthetic and deterministic.</p>
+          </div>
         </article>
         <article className="principle-card">
-          <span><Smartphone size={19} aria-hidden="true" /></span>
-          <div><strong>Desktop and mobile</strong><p>The directory changes from a table to touch-friendly member cards at narrow widths.</p></div>
+          <span>
+            <Smartphone size={19} aria-hidden="true" />
+          </span>
+          <div>
+            <strong>Desktop and mobile</strong>
+            <p>
+              The directory changes from a table to touch-friendly member cards at narrow widths.
+            </p>
+          </div>
         </article>
         <article className="principle-card">
-          <span><Sparkles size={19} aria-hidden="true" /></span>
-          <div><strong>Light and dark themes</strong><p>The user can switch modes at any time; the preference persists on the device.</p></div>
+          <span>
+            <Sparkles size={19} aria-hidden="true" />
+          </span>
+          <div>
+            <strong>Light and dark themes</strong>
+            <p>The user can switch modes at any time; the preference persists on the device.</p>
+          </div>
         </article>
       </section>
     </div>

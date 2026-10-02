@@ -40,9 +40,7 @@ def read_members(
     db: Db,
     _auth: CurrentAuth,
     query: Annotated[str | None, Query(max_length=120)] = None,
-    status_filter: Annotated[
-        Literal["all", "active", "inactive"], Query(alias="status")
-    ] = "all",
+    status_filter: Annotated[Literal["all", "active", "inactive"], Query(alias="status")] = "all",
     limit: Annotated[int, Query(ge=1, le=100)] = 25,
     offset: Annotated[int, Query(ge=0)] = 0,
 ) -> MemberListResponse:
@@ -96,26 +94,28 @@ def edit_member(
     except MemberConflictError as exc:
         raise _conflict() from exc
     except MemberInputError as exc:
-        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_CONTENT, detail=str(exc)) from exc
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_CONTENT, detail=str(exc)
+        ) from exc
 
 
 @router.post("/{member_id}/deactivate", response_model=MemberRead)
-def deactivate_member(
-    member_id: UUID, request: Request, db: Db, auth: CurrentAuth
-) -> MemberRead:
+def deactivate_member(member_id: UUID, request: Request, db: Db, auth: CurrentAuth) -> MemberRead:
     validate_csrf(request, auth)
     try:
-        return MemberRead.model_validate(set_member_active(db, get_member(db, member_id), is_active=False))
+        return MemberRead.model_validate(
+            set_member_active(db, get_member(db, member_id), is_active=False)
+        )
     except MemberNotFoundError as exc:
         raise _not_found() from exc
 
 
 @router.post("/{member_id}/activate", response_model=MemberRead)
-def activate_member(
-    member_id: UUID, request: Request, db: Db, auth: CurrentAuth
-) -> MemberRead:
+def activate_member(member_id: UUID, request: Request, db: Db, auth: CurrentAuth) -> MemberRead:
     validate_csrf(request, auth)
     try:
-        return MemberRead.model_validate(set_member_active(db, get_member(db, member_id), is_active=True))
+        return MemberRead.model_validate(
+            set_member_active(db, get_member(db, member_id), is_active=True)
+        )
     except MemberNotFoundError as exc:
         raise _not_found() from exc

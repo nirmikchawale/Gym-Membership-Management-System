@@ -43,7 +43,9 @@ function mockFetch(authenticated: boolean) {
         )
       }
       if (url.includes('/api/v1/members')) {
-        return Promise.resolve(jsonResponse({ items: [memberRecord], total: 1, limit: 20, offset: 0 }))
+        return Promise.resolve(
+          jsonResponse({ items: [memberRecord], total: 1, limit: 20, offset: 0 }),
+        )
       }
       return Promise.resolve(
         jsonResponse({

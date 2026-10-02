@@ -16,8 +16,7 @@ html[data-theme='light'] .search-field input::placeholder {
 
 html[data-theme='light'] .demo-notice {
   background:
-    linear-gradient(135deg, rgb(83 111 232 / 8%), rgb(118 87 216 / 3%)),
-    rgb(255 255 255 / 78%);
+    linear-gradient(135deg, rgb(83 111 232 / 8%), rgb(118 87 216 / 3%)), rgb(255 255 255 / 78%);
 }
 
 html[data-theme='light'] .bar-track {

@@ -28,7 +28,11 @@ export function ThemeToggle({ compact = false }: { compact?: boolean }) {
         setTheme(nextTheme)
       }}
     >
-      {theme === 'dark' ? <Sun size={17} aria-hidden="true" /> : <Moon size={17} aria-hidden="true" />}
+      {theme === 'dark' ? (
+        <Sun size={17} aria-hidden="true" />
+      ) : (
+        <Moon size={17} aria-hidden="true" />
+      )}
       {!compact && <span>{theme === 'dark' ? 'Light' : 'Dark'}</span>}
     </button>
   )

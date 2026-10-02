@@ -20,10 +20,7 @@ import {
   type MemberRecord,
 } from '../lib/api'
 import { formatDate, type DemoMember } from '../lib/demo-data'
-import {
-  registeredDemoMemberMetrics,
-  registeredDemoMembers,
-} from '../lib/registered-demo-members'
+import { registeredDemoMemberMetrics, registeredDemoMembers } from '../lib/registered-demo-members'
 import { Badge, Button } from '../components/ui'
 
 type StatusFilter = 'all' | 'active' | 'inactive'
@@ -136,9 +133,13 @@ function MemberFormDialog({
   }
 
   return (
-    <div className="member-form-dialog" role="presentation" onMouseDown={(event) => {
-      if (event.target === event.currentTarget && !submitting) onClose()
-    }}>
+    <div
+      className="member-form-dialog"
+      role="presentation"
+      onMouseDown={(event) => {
+        if (event.target === event.currentTarget && !submitting) onClose()
+      }}
+    >
       <section
         className="member-form-dialog__surface"
         role="dialog"
@@ -150,34 +151,69 @@ function MemberFormDialog({
             <p className="card-eyebrow">{mode === 'create' ? 'New member' : 'Member record'}</p>
             <h2 id="member-form-title">{mode === 'create' ? 'Add a member' : 'Edit member'}</h2>
           </div>
-          <button className="icon-button" type="button" aria-label="Close member form" onClick={onClose}>
+          <button
+            className="icon-button"
+            type="button"
+            aria-label="Close member form"
+            onClick={onClose}
+          >
             <X size={18} aria-hidden="true" />
           </button>
         </div>
 
         <form className="member-form" onSubmit={handleSubmit}>
           <label className="field">
-            <span className="field__label">Member code <small>optional</small></span>
-            <input name="member_code" defaultValue={member?.code ?? ''} maxLength={32} autoComplete="off" />
+            <span className="field__label">
+              Member code <small>optional</small>
+            </span>
+            <input
+              name="member_code"
+              defaultValue={member?.code ?? ''}
+              maxLength={32}
+              autoComplete="off"
+            />
           </label>
           <div className="member-form__split">
             <label className="field">
               <span className="field__label">First name</span>
-              <input name="first_name" defaultValue={member?.firstName ?? ''} maxLength={100} autoFocus required />
+              <input
+                name="first_name"
+                defaultValue={member?.firstName ?? ''}
+                maxLength={100}
+                autoFocus
+                required
+              />
             </label>
             <label className="field">
               <span className="field__label">Last name</span>
-              <input name="last_name" defaultValue={member?.lastName ?? ''} maxLength={100} required />
+              <input
+                name="last_name"
+                defaultValue={member?.lastName ?? ''}
+                maxLength={100}
+                required
+              />
             </label>
           </div>
           <div className="member-form__split">
             <label className="field">
               <span className="field__label">Email</span>
-              <input name="email" type="email" defaultValue={member?.email ?? ''} maxLength={320} autoComplete="email" />
+              <input
+                name="email"
+                type="email"
+                defaultValue={member?.email ?? ''}
+                maxLength={320}
+                autoComplete="email"
+              />
             </label>
             <label className="field">
               <span className="field__label">Phone</span>
-              <input name="phone" type="tel" defaultValue={member?.phone ?? ''} maxLength={32} autoComplete="tel" />
+              <input
+                name="phone"
+                type="tel"
+                defaultValue={member?.phone ?? ''}
+                maxLength={32}
+                autoComplete="tel"
+              />
             </label>
           </div>
           <div className="member-form__split">
@@ -187,15 +223,28 @@ function MemberFormDialog({
             </label>
             <label className="field">
               <span className="field__label">Joined on</span>
-              <input name="joined_on" type="date" defaultValue={member?.joinedOn ?? new Date().toISOString().slice(0, 10)} required />
+              <input
+                name="joined_on"
+                type="date"
+                defaultValue={member?.joinedOn ?? new Date().toISOString().slice(0, 10)}
+                required
+              />
             </label>
           </div>
 
-          {error && <p className="form-error" role="alert">{error}</p>}
+          {error && (
+            <p className="form-error" role="alert">
+              {error}
+            </p>
+          )}
 
           <div className="member-form__actions">
-            <Button type="button" variant="secondary" onClick={onClose} disabled={submitting}>Cancel</Button>
-            <Button type="submit" disabled={submitting}>{submitting ? 'Saving…' : mode === 'create' ? 'Add member' : 'Save changes'}</Button>
+            <Button type="button" variant="secondary" onClick={onClose} disabled={submitting}>
+              Cancel
+            </Button>
+            <Button type="submit" disabled={submitting}>
+              {submitting ? 'Saving…' : mode === 'create' ? 'Add member' : 'Save changes'}
+            </Button>
           </div>
         </form>
       </section>
@@ -227,19 +276,23 @@ export function MembersPage({ publicPreview }: { publicPreview: boolean }) {
   const filteredDemoMembers = useMemo(() => {
     if (!publicPreview) return []
     const normalized = debouncedQuery.toLowerCase()
-    return registeredDemoMembers
-      .map(fromDemo)
-      .filter((member) => {
-        const matchesStatus =
-          status === 'all' || (status === 'active' ? member.isActive : !member.isActive)
-        const matchesQuery =
-          !normalized ||
-          [member.code, fullName(member), member.email ?? '', member.phone ?? '', member.demoPlanCode ?? '']
-            .join(' ')
-            .toLowerCase()
-            .includes(normalized)
-        return matchesStatus && matchesQuery
-      })
+    return registeredDemoMembers.map(fromDemo).filter((member) => {
+      const matchesStatus =
+        status === 'all' || (status === 'active' ? member.isActive : !member.isActive)
+      const matchesQuery =
+        !normalized ||
+        [
+          member.code,
+          fullName(member),
+          member.email ?? '',
+          member.phone ?? '',
+          member.demoPlanCode ?? '',
+        ]
+          .join(' ')
+          .toLowerCase()
+          .includes(normalized)
+      return matchesStatus && matchesQuery
+    })
   }, [debouncedQuery, publicPreview, status])
 
   useEffect(() => {
@@ -293,7 +346,9 @@ export function MembersPage({ publicPreview }: { publicPreview: boolean }) {
       setSelectedId(saved.id)
       setRefreshKey((value) => value + 1)
     } catch (toggleError: unknown) {
-      setError(toggleError instanceof Error ? toggleError.message : 'Unable to change member status')
+      setError(
+        toggleError instanceof Error ? toggleError.message : 'Unable to change member status',
+      )
     } finally {
       setStatusBusy(false)
     }
@@ -319,7 +374,11 @@ export function MembersPage({ publicPreview }: { publicPreview: boolean }) {
         {publicPreview ? (
           <Badge tone="accent">Read-only demo · {registeredDemoMemberMetrics.total} records</Badge>
         ) : (
-          <Button type="button" icon={<Plus size={16} aria-hidden="true" />} onClick={() => setFormMode('create')}>
+          <Button
+            type="button"
+            icon={<Plus size={16} aria-hidden="true" />}
+            onClick={() => setFormMode('create')}
+          >
             Add member
           </Button>
         )}
@@ -339,7 +398,9 @@ export function MembersPage({ publicPreview }: { publicPreview: boolean }) {
         <article>
           <CirclePause size={18} aria-hidden="true" />
           <span>{publicPreview ? 'Paused demo members' : 'Directory mode'}</span>
-          <strong>{publicPreview ? registeredDemoMemberMetrics.paused : status === 'all' ? 'All' : status}</strong>
+          <strong>
+            {publicPreview ? registeredDemoMemberMetrics.paused : status === 'all' ? 'All' : status}
+          </strong>
         </article>
       </section>
 
@@ -364,7 +425,9 @@ export function MembersPage({ publicPreview }: { publicPreview: boolean }) {
               <p className="card-eyebrow">Member directory</p>
               <h2>Find a member in seconds.</h2>
             </div>
-            <Badge tone="neutral" className="member-result-count">{loading ? 'Loading…' : `${total} match${total === 1 ? '' : 'es'}`}</Badge>
+            <Badge tone="neutral" className="member-result-count">
+              {loading ? 'Loading…' : `${total} match${total === 1 ? '' : 'es'}`}
+            </Badge>
           </div>
 
           <div className="data-toolbar member-toolbar">
@@ -380,7 +443,10 @@ export function MembersPage({ publicPreview }: { publicPreview: boolean }) {
             </label>
             <label className="filter-field">
               <span>Status</span>
-              <select value={status} onChange={(event) => setStatus(event.target.value as StatusFilter)}>
+              <select
+                value={status}
+                onChange={(event) => setStatus(event.target.value as StatusFilter)}
+              >
                 <option value="all">All</option>
                 <option value="active">Active</option>
                 <option value="inactive">Paused / inactive</option>
@@ -388,7 +454,11 @@ export function MembersPage({ publicPreview }: { publicPreview: boolean }) {
             </label>
           </div>
 
-          {error && <div className="workspace-alert member-error" role="alert">{error}</div>}
+          {error && (
+            <div className="workspace-alert member-error" role="alert">
+              {error}
+            </div>
+          )}
 
           <div className="data-table-wrap member-table-wrap" aria-live="polite">
             <table className="data-table member-table">
@@ -399,38 +469,93 @@ export function MembersPage({ publicPreview }: { publicPreview: boolean }) {
                   <th>Joined</th>
                   {publicPreview && <th>Plan</th>}
                   <th>Status</th>
-                  <th><span className="sr-only">Actions</span></th>
+                  <th>
+                    <span className="sr-only">Actions</span>
+                  </th>
                 </tr>
               </thead>
               <tbody>
-                {!loading && members.map((member) => (
-                  <tr key={member.id} className={selectedId === member.id ? 'member-row--selected' : undefined}>
-                    <td data-label="Member">
-                      <button className="member-cell member-cell--button" type="button" onClick={() => setSelectedId(member.id)}>
-                        <span className="member-cell__avatar" aria-hidden="true">{initials(member)}</span>
-                        <span><strong>{fullName(member)}</strong><small>{member.code}</small></span>
-                      </button>
-                    </td>
-                    <td data-label="Contact">
-                      <span className="stacked-cell"><strong>{member.phone ?? 'No phone'}</strong><small>{member.email ?? 'No email'}</small></span>
-                    </td>
-                    <td data-label="Joined">{formatDate(member.joinedOn)}</td>
-                    {publicPreview && <td data-label="Plan">{member.demoPlanCode}</td>}
-                    <td data-label="Status"><Badge tone={member.isActive ? 'success' : 'warning'}>{member.isActive ? 'Active' : 'Paused'}</Badge></td>
-                    <td data-label="Action"><Button type="button" variant="ghost" onClick={() => setSelectedId(member.id)}>View</Button></td>
-                  </tr>
-                ))}
+                {!loading &&
+                  members.map((member) => (
+                    <tr
+                      key={member.id}
+                      className={selectedId === member.id ? 'member-row--selected' : undefined}
+                    >
+                      <td data-label="Member">
+                        <button
+                          className="member-cell member-cell--button"
+                          type="button"
+                          onClick={() => setSelectedId(member.id)}
+                        >
+                          <span className="member-cell__avatar" aria-hidden="true">
+                            {initials(member)}
+                          </span>
+                          <span>
+                            <strong>{fullName(member)}</strong>
+                            <small>{member.code}</small>
+                          </span>
+                        </button>
+                      </td>
+                      <td data-label="Contact">
+                        <span className="stacked-cell">
+                          <strong>{member.phone ?? 'No phone'}</strong>
+                          <small>{member.email ?? 'No email'}</small>
+                        </span>
+                      </td>
+                      <td data-label="Joined">{formatDate(member.joinedOn)}</td>
+                      {publicPreview && <td data-label="Plan">{member.demoPlanCode}</td>}
+                      <td data-label="Status">
+                        <Badge tone={member.isActive ? 'success' : 'warning'}>
+                          {member.isActive ? 'Active' : 'Paused'}
+                        </Badge>
+                      </td>
+                      <td data-label="Action">
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          onClick={() => setSelectedId(member.id)}
+                        >
+                          View
+                        </Button>
+                      </td>
+                    </tr>
+                  ))}
               </tbody>
             </table>
-            {loading && <div className="member-loading" role="status">Loading member directory…</div>}
-            {!loading && members.length === 0 && <div className="data-empty" role="status">No members match this search and status filter.</div>}
+            {loading && (
+              <div className="member-loading" role="status">
+                Loading member directory…
+              </div>
+            )}
+            {!loading && members.length === 0 && (
+              <div className="data-empty" role="status">
+                No members match this search and status filter.
+              </div>
+            )}
           </div>
 
           <div className="member-pagination" aria-label="Member directory pagination">
-            <span>Page {page} of {pageCount}</span>
+            <span>
+              Page {page} of {pageCount}
+            </span>
             <div>
-              <Button type="button" variant="secondary" icon={<ChevronLeft size={16} aria-hidden="true" />} disabled={page <= 1 || loading} onClick={() => setPage((value) => Math.max(1, value - 1))}>Previous</Button>
-              <Button type="button" variant="secondary" disabled={page >= pageCount || loading} onClick={() => setPage((value) => Math.min(pageCount, value + 1))}>Next <ChevronRight size={16} aria-hidden="true" /></Button>
+              <Button
+                type="button"
+                variant="secondary"
+                icon={<ChevronLeft size={16} aria-hidden="true" />}
+                disabled={page <= 1 || loading}
+                onClick={() => setPage((value) => Math.max(1, value - 1))}
+              >
+                Previous
+              </Button>
+              <Button
+                type="button"
+                variant="secondary"
+                disabled={page >= pageCount || loading}
+                onClick={() => setPage((value) => Math.min(pageCount, value + 1))}
+              >
+                Next <ChevronRight size={16} aria-hidden="true" />
+              </Button>
             </div>
           </div>
         </article>
@@ -439,29 +564,86 @@ export function MembersPage({ publicPreview }: { publicPreview: boolean }) {
           {selected ? (
             <>
               <div className="member-detail__header">
-                <span className="member-detail__avatar" aria-hidden="true">{initials(selected)}</span>
-                <div><p className="card-eyebrow">{selected.code}</p><h2>{fullName(selected)}</h2></div>
+                <span className="member-detail__avatar" aria-hidden="true">
+                  {initials(selected)}
+                </span>
+                <div>
+                  <p className="card-eyebrow">{selected.code}</p>
+                  <h2>{fullName(selected)}</h2>
+                </div>
               </div>
               <dl className="member-detail__list">
-                <div><dt>Status</dt><dd><Badge tone={selected.isActive ? 'success' : 'warning'}>{selected.isActive ? 'Active' : 'Paused'}</Badge></dd></div>
-                <div><dt>Email</dt><dd>{selected.email ?? 'Not provided'}</dd></div>
-                <div><dt>Phone</dt><dd>{selected.phone ?? 'Not provided'}</dd></div>
-                <div><dt>Joined</dt><dd>{formatDate(selected.joinedOn)}</dd></div>
-                {selected.dateOfBirth && <div><dt>Date of birth</dt><dd>{formatDate(selected.dateOfBirth)}</dd></div>}
-                {selected.demoPlanCode && <div><dt>Demo plan</dt><dd>{selected.demoPlanCode}</dd></div>}
-                {selected.demoMembershipEnds && <div><dt>Demo membership ends</dt><dd>{formatDate(selected.demoMembershipEnds)}</dd></div>}
+                <div>
+                  <dt>Status</dt>
+                  <dd>
+                    <Badge tone={selected.isActive ? 'success' : 'warning'}>
+                      {selected.isActive ? 'Active' : 'Paused'}
+                    </Badge>
+                  </dd>
+                </div>
+                <div>
+                  <dt>Email</dt>
+                  <dd>{selected.email ?? 'Not provided'}</dd>
+                </div>
+                <div>
+                  <dt>Phone</dt>
+                  <dd>{selected.phone ?? 'Not provided'}</dd>
+                </div>
+                <div>
+                  <dt>Joined</dt>
+                  <dd>{formatDate(selected.joinedOn)}</dd>
+                </div>
+                {selected.dateOfBirth && (
+                  <div>
+                    <dt>Date of birth</dt>
+                    <dd>{formatDate(selected.dateOfBirth)}</dd>
+                  </div>
+                )}
+                {selected.demoPlanCode && (
+                  <div>
+                    <dt>Demo plan</dt>
+                    <dd>{selected.demoPlanCode}</dd>
+                  </div>
+                )}
+                {selected.demoMembershipEnds && (
+                  <div>
+                    <dt>Demo membership ends</dt>
+                    <dd>{formatDate(selected.demoMembershipEnds)}</dd>
+                  </div>
+                )}
               </dl>
               {publicPreview ? (
-                <p className="member-detail__note">Public preview records are intentionally read-only. Editing is enabled only in the authenticated application.</p>
+                <p className="member-detail__note">
+                  Public preview records are intentionally read-only. Editing is enabled only in the
+                  authenticated application.
+                </p>
               ) : (
                 <div className="member-detail__actions">
-                  <Button type="button" variant="secondary" icon={<Pencil size={15} aria-hidden="true" />} onClick={() => setFormMode('edit')}>Edit member</Button>
-                  <Button type="button" variant={selected.isActive ? 'danger' : 'secondary'} disabled={statusBusy} onClick={() => void toggleMember(selected)}>{statusBusy ? 'Saving…' : selected.isActive ? 'Deactivate' : 'Reactivate'}</Button>
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    icon={<Pencil size={15} aria-hidden="true" />}
+                    onClick={() => setFormMode('edit')}
+                  >
+                    Edit member
+                  </Button>
+                  <Button
+                    type="button"
+                    variant={selected.isActive ? 'danger' : 'secondary'}
+                    disabled={statusBusy}
+                    onClick={() => void toggleMember(selected)}
+                  >
+                    {statusBusy ? 'Saving…' : selected.isActive ? 'Deactivate' : 'Reactivate'}
+                  </Button>
                 </div>
               )}
             </>
           ) : (
-            <div className="member-detail__empty"><UserRound size={26} aria-hidden="true" /><h2>Select a member</h2><p>Open any row to inspect contact details, status and lifecycle context.</p></div>
+            <div className="member-detail__empty">
+              <UserRound size={26} aria-hidden="true" />
+              <h2>Select a member</h2>
+              <p>Open any row to inspect contact details, status and lifecycle context.</p>
+            </div>
           )}
         </aside>
       </section>
