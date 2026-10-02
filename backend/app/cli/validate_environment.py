@@ -37,7 +37,7 @@ def production_configuration_errors(config: Settings) -> list[str]:
         errors.append("Production CSRF cookie must use a __Host- name")
 
     try:
-        config.timezone
+        _timezone = config.timezone
     except Exception:
         errors.append("APP_TIMEZONE must be a valid IANA timezone")
     return errors
