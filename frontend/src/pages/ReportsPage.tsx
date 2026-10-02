@@ -43,11 +43,27 @@ export function ReportsPage({ publicPreview }: { publicPreview: boolean }) {
           <h1>Reports</h1>
           <p>
             Review member, membership and attendance signals using bounded windows backed by the
-            same persisted records as the front-desk workflows.
+            same operational records as the front-desk workflows.
           </p>
         </div>
-        <Badge tone="neutral">Payments excluded</Badge>
+        <Badge tone={publicPreview ? 'accent' : 'neutral'}>
+          {publicPreview ? 'Interactive synthetic data' : 'Payments excluded'}
+        </Badge>
       </header>
+
+      {publicPreview && (
+        <aside className="demo-notice" aria-label="Reporting demo notice">
+          <SlidersHorizontal size={18} aria-hidden="true" />
+          <div>
+            <strong>Reports reconcile with the shared demo sandbox</strong>
+            <p>
+              Member, membership and attendance changes made elsewhere in the demo are reflected in
+              these operational metrics when the reporting workspace is opened.
+            </p>
+          </div>
+          <Badge tone="success">Reconciled</Badge>
+        </aside>
+      )}
 
       <article className="data-card">
         <div className="data-card__header">
