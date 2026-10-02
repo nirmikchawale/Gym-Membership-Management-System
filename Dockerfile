@@ -22,6 +22,8 @@ COPY --from=ghcr.io/astral-sh/uv:0.10.0 /uv /uvx /bin/
 COPY backend/pyproject.toml backend/uv.lock ./
 RUN uv sync --frozen --no-dev
 
+COPY backend/alembic.ini ./alembic.ini
+COPY backend/alembic ./alembic
 COPY backend/app ./app
 COPY --from=frontend-build /app/frontend/dist ./static
 

@@ -15,6 +15,20 @@ services:
       timeout: 5s
       retries: 10
 
+  migrate:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: ["alembic", "-c", "/app/alembic.ini", "upgrade", "head"]
+    environment:
+      APP_ENV: development
+      APP_TIMEZONE: Asia/Kolkata
+      DATABASE_URL: postgresql+psycopg://${POSTGRES_USER:-gym_app}:${POSTGRES_PASSWORD:-gym_dev_password}@db:5432/${POSTGRES_DB:-gym_membership}
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: "no"
+
   app:
     build:
       context: .
@@ -26,6 +40,8 @@ services:
     depends_on:
       db:
         condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
     ports:
       - "8000:8000"
     healthcheck:

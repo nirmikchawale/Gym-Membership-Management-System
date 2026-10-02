@@ -14,6 +14,10 @@ echo "==> Frontend checks"
   pnpm build
 )
 
+echo "==> Database migration checks"
+uv run --project backend alembic -c backend/alembic.ini upgrade head
+uv run --project backend alembic -c backend/alembic.ini check
+
 echo "==> Backend checks"
 uv run --project backend ruff check backend
 uv run --project backend ruff format --check backend
@@ -23,10 +27,14 @@ uv run --project backend mypy backend/app backend/tests
   uv run python -m pytest
 )
 
+echo "==> Migration reversibility"
+uv run --project backend alembic -c backend/alembic.ini downgrade base
+uv run --project backend alembic -c backend/alembic.ini upgrade head
+
 echo "==> Container stack"
 docker compose up -d --build
 cleanup() {
-  docker compose down
+  docker compose down -v
 }
 trap cleanup EXIT
 
