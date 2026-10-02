@@ -163,7 +163,7 @@ describe('App', () => {
     expect(await screen.findByText(/API \+ PostgreSQL online/i)).toBeVisible()
   })
 
-  it('shows reconciled operational dashboard data for an authenticated session', async () => {
+  it('shows reconciled operational dashboard data without unfinished-module notices', async () => {
     mockFetch(true)
     render(<App />)
 
@@ -174,6 +174,9 @@ describe('App', () => {
     expect(screen.getAllByText(/Gridstone Admin/i)).toHaveLength(2)
     expect(screen.getByRole('link', { name: /^reports$/i })).toBeVisible()
     expect(screen.getByRole('link', { name: /^payments$/i })).toBeVisible()
+    expect(screen.getByText(/Reconciled reporting/i)).toBeVisible()
+    expect(screen.queryByText(/Payments excluded/i)).not.toBeInTheDocument()
+    expect(screen.queryByText(/not implemented/i)).not.toBeInTheDocument()
   })
 
   it('supports the completed Members vertical slice', async () => {
@@ -212,7 +215,7 @@ describe('App', () => {
     expect(await screen.findByText(/No attendance visits match these filters/i)).toBeVisible()
   })
 
-  it('supports bounded operational reporting controls', async () => {
+  it('supports bounded operational reporting without unfinished-module notices', async () => {
     window.history.replaceState({}, '', '/reports')
     mockFetch(true)
     render(<App />)
@@ -221,7 +224,9 @@ describe('App', () => {
     const attendanceRange = screen.getByLabelText(/Attendance trend/i)
     fireEvent.change(attendanceRange, { target: { value: '14' } })
     expect(await screen.findByText(/Last 14 days/i)).toBeVisible()
-    expect(screen.getByText(/Payments excluded/i)).toBeVisible()
+    expect(screen.getByText(/Live operational data/i)).toBeVisible()
+    expect(screen.queryByText(/Payments excluded/i)).not.toBeInTheDocument()
+    expect(screen.queryByText(/not implemented/i)).not.toBeInTheDocument()
   })
 
   it('keeps Payments as the sole explicit unavailable module', async () => {

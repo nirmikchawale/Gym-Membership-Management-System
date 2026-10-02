@@ -109,7 +109,7 @@ export function HomePage({
             <p className="card-eyebrow">Reporting workspace</p>
             <h2>Change the operational window without changing the source of truth.</h2>
           </div>
-          <Badge tone="neutral">Payments excluded</Badge>
+          <Badge tone="success">Reconciled reporting</Badge>
         </div>
         <p className="data-empty">
           Reports supports bounded attendance and expiry windows while keeping the same reconciled
