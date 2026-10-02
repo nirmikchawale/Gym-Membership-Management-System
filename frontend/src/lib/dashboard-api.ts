@@ -1,5 +1,7 @@
 export type DashboardOverview = {
   as_of: string
+  trend_days: number
+  expiring_within_days: number
   members: {
     total: number
     active: number
@@ -17,7 +19,7 @@ export type DashboardOverview = {
   attendance: {
     open_visits: number
     today_checkins: number
-    last_7_days_checkins: number
+    period_checkins: number
   }
   expiring_soon: Array<{
     membership_id: string
@@ -43,6 +45,12 @@ export type DashboardOverview = {
 
 type ApiErrorBody = { detail?: string }
 
+type DashboardOptions = {
+  trendDays?: 7 | 14 | 30
+  expiringDays?: 30 | 60 | 90
+  signal?: AbortSignal
+}
+
 async function errorMessage(response: Response, fallback: string) {
   try {
     const body = (await response.json()) as ApiErrorBody
@@ -52,13 +60,22 @@ async function errorMessage(response: Response, fallback: string) {
   }
 }
 
-export async function getDashboard(signal?: AbortSignal): Promise<DashboardOverview> {
-  const response = await fetch('/api/v1/dashboard', {
+export async function getDashboard({
+  trendDays = 7,
+  expiringDays = 30,
+  signal,
+}: DashboardOptions = {}): Promise<DashboardOverview> {
+  const query = new URLSearchParams({
+    trend_days: String(trendDays),
+    expiring_days: String(expiringDays),
+  })
+  const response = await fetch(`/api/v1/dashboard?${query.toString()}`, {
     method: 'GET',
     headers: { Accept: 'application/json' },
     credentials: 'same-origin',
     signal,
   })
-  if (!response.ok) throw new Error(await errorMessage(response, 'Unable to load operational dashboard'))
+  if (!response.ok)
+    throw new Error(await errorMessage(response, 'Unable to load operational dashboard'))
   return (await response.json()) as DashboardOverview
 }
